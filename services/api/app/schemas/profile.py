@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 from pydantic import BaseModel, Field, field_validator
 
 
 def _calculate_age(value: date) -> int:
-    today = date.today()
+    today = datetime.now(UTC).date()
     return today.year - value.year - ((today.month, today.day) < (value.month, value.day))
 
 

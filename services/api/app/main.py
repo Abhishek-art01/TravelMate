@@ -7,6 +7,7 @@ from app.config import get_settings
 from app.routers.health import router as health_router
 
 settings = get_settings()
+allowed_origins = [origin.strip() for origin in settings.cors_allowed_origins.split(",") if origin.strip()]
 
 app = FastAPI(
     title=settings.app_name,
@@ -25,7 +26,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             status_code=401,
             content={
                 "error": {
-                    "code": "AUTHENTICATION_REQUIRED",
+                    "code": exc.detail.get("error", {}).get("code", "AUTHENTICATION_REQUIRED"),
                     "message": exc.detail.get("error", {}).get("message", "Authentication required."),
                 }
             },
@@ -49,12 +50,15 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

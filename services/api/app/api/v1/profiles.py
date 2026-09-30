@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
+from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, field_validator
@@ -11,7 +12,7 @@ router = APIRouter(tags=["profiles"])
 
 
 def _calculate_age(date_of_birth: date) -> int:
-    today = date.today()
+    today = datetime.now(UTC).date()
     return today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
 
 
@@ -37,7 +38,7 @@ class ProfileResponse(BaseModel):
 
 
 @router.get("/me")
-async def read_current_profile(current_user: dict = Depends(get_current_user)):
+async def read_current_profile(current_user: Annotated[dict, Depends(get_current_user)]):
     return {
         "user_id": current_user["user_id"],
         "email": current_user.get("email"),
@@ -47,7 +48,7 @@ async def read_current_profile(current_user: dict = Depends(get_current_user)):
 
 
 @router.post("/profiles")
-async def create_profile(payload: ProfileCreate, current_user: dict | None = Depends(get_current_user_optional)):
+async def create_profile(payload: ProfileCreate, current_user: Annotated[dict | None, Depends(get_current_user_optional)] = None):
     profile = ProfileResponse(
         profile_id="profile-demo-001",
         display_name=payload.display_name,
@@ -65,7 +66,7 @@ async def create_profile(payload: ProfileCreate, current_user: dict | None = Dep
 
 
 @router.patch("/me/profile")
-async def update_current_profile(current_user: dict = Depends(get_current_user)):
+async def update_current_profile(current_user: Annotated[dict, Depends(get_current_user)]):
     return {
         "updated": True,
         "user_id": current_user["user_id"],

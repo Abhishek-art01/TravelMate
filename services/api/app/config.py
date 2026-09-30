@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,8 +34,19 @@ class Settings(BaseSettings):
     supabase_jwt_issuer: str = "https://example.supabase.co/auth/v1"
     supabase_jwt_audience: str = "authenticated"
     supabase_jwks_url: str = "https://example.supabase.co/auth/v1/jwks"
+    cors_allowed_origins: str = "http://localhost:3000,http://localhost:5173,http://localhost:4173"
+    jwt_cache_ttl_seconds: int = 300
 
     otel_exporter_otlp_endpoint: str = "http://localhost:4318"
+
+    @field_validator("cors_allowed_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: str | list[str] | None) -> str:
+        if value is None:
+            return "http://localhost:3000,http://localhost:5173,http://localhost:4173"
+        if isinstance(value, list):
+            return ",".join(value)
+        return value
 
     model_config = SettingsConfigDict(
         env_file=".env",
