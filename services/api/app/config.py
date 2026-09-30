@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     debug: bool = False
     host: str = "0.0.0.0"
     port: int = 8000
+    log_level: str = "INFO"
+
+    database_url: str = "postgresql+asyncpg://travelmate:travelmate@localhost:5432/travelmate"
+    database_pool_size: int = 20
+    database_max_overflow: int = 10
 
     postgres_host: str = "localhost"
     postgres_port: int = 5432
@@ -25,6 +30,11 @@ class Settings(BaseSettings):
     supabase_anon_key: str = "placeholder"
     supabase_service_role_key: str = "placeholder"
     supabase_jwt_secret: str = "placeholder"
+    supabase_jwt_issuer: str = "https://example.supabase.co/auth/v1"
+    supabase_jwt_audience: str = "authenticated"
+    supabase_jwks_url: str = "https://example.supabase.co/auth/v1/jwks"
+
+    otel_exporter_otlp_endpoint: str = "http://localhost:4318"
 
     model_config = SettingsConfigDict(
         env_file=".env",
