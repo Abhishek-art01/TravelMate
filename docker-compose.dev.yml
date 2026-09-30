@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: travelmate-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travelmate
+      POSTGRES_USER: travelmate
+      POSTGRES_PASSWORD: travelmate
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:7
+    container_name: travelmate-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: travelmate
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: travelmate-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+
+  api:
+    image: python:3.12-slim
+    container_name: travelmate-api
+    working_dir: /app
+    command: sh -c "pip install -r services/api/requirements.txt && uvicorn services.api.app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+    environment:
+      FASTAPI_HOST: 0.0.0.0
+      FASTAPI_PORT: 8000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: travelmate
+      POSTGRES_USER: travelmate
+      POSTGRES_PASSWORD: travelmate
+      MONGODB_URI: mongodb://admin:admin@mongo:27017/travelmate
+      REDIS_URL: redis://redis:6379/0
+      SUPABASE_URL: https://example.supabase.co
+      SUPABASE_ANON_KEY: placeholder
+      SUPABASE_SERVICE_ROLE_KEY: placeholder
+      SUPABASE_JWT_SECRET: placeholder
+
+  web:
+    image: node:20-alpine
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: sh -c "npm install && npm run dev --workspace apps/web -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  admin-web:
+    image: node:20-alpine
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: sh -c "npm install && npm run dev --workspace apps/admin-web -- --host 0.0.0.0"
+    ports:
+      - "4173:4173"
+    depends_on:
+      - api

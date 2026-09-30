@@ -1,0 +1,33 @@
+# Node / frontend
+node_modules/
+apps/**/dist/
+apps/**/.vite/
+
+# Python / backend
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+coverage.xml
+htmlcov/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS / editor / tooling
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Build artifacts
+build/
+coverage/
+
+# Docker optional volumes
+postgres-data/
+mongo-data/
+redis-data/
