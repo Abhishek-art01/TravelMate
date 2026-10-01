@@ -152,7 +152,7 @@ export default function VerificationPage() {
     <div className="member-layout">
       <header className="member-header">
         <Link to="/home" className="brand-lockup">
-          <span className="brand-mark">T</span>
+          <span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span>
           <span>travelmate</span>
         </Link>
         <nav aria-label="Main navigation">

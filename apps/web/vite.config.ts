@@ -3,6 +3,15 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  envDir: '../../',
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
   build: {
     rolldownOptions: {
       output: {

@@ -22,7 +22,7 @@ export default function HomePage() {
 
   return (
     <div className="member-layout">
-      <header className="member-header"><Link to="/home" className="brand-lockup"><span className="brand-mark">T</span><span>travelmate</span></Link><nav aria-label="Main navigation"><Link className="nav-active" to="/home">Home</Link><Link to="/profile">Profile</Link><Link to="/settings/verification">Verification</Link><Link to="/privacy">Privacy</Link></nav><Button variant="ghost" onClick={() => void logout()}>Sign out <span aria-hidden="true">↗</span></Button></header>
+      <header className="member-header"><Link to="/home" className="brand-lockup"><span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span>travelmate</span></Link><nav aria-label="Main navigation"><Link className="nav-active" to="/home">Home</Link><Link to="/profile">Profile</Link><Link to="/settings/verification">Verification</Link><Link to="/privacy">Privacy</Link></nav><Button variant="ghost" onClick={() => void logout()}>Sign out <span aria-hidden="true">↗</span></Button></header>
       <main className="home-main">
         <section className="home-intro"><div><p className="eyebrow">YOUR JOURNEY, YOUR PACE</p><h1>Good to have you here,<br /><em>{displayName}.</em></h1><p>Every good trip starts with a little curiosity.</p></div><span className="compass-art" aria-hidden="true">N<span>✳</span></span></section>
         <section className="home-grid" aria-label="Your TravelMate account">
