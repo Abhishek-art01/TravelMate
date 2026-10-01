@@ -27,6 +27,13 @@ htmlcov/
 build/
 coverage/
 
+# Native toolchain caches and installer downloads
+.gradle/
+.build/
+.swiftpm/
+swiftly-*.tar.gz
+/swiftly
+
 # Docker optional volumes
 postgres-data/
 mongo-data/
