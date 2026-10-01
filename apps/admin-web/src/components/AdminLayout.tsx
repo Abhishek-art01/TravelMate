@@ -39,7 +39,7 @@ export function AdminLayout() {
     <div className="admin-shell">
       <header className="topbar">
         <button className="menu-toggle" type="button" aria-expanded={drawerOpen} aria-controls="admin-sidebar" aria-label={drawerOpen ? 'Close navigation' : 'Open navigation'} onClick={() => setDrawerOpen((open) => !open)}>{drawerOpen ? '×' : '☰'}</button>
-        <Link className="admin-brand" to="/admin"><span className="admin-mark">TM</span><span><strong>TravelMate</strong><small>ADMIN CONSOLE</small></span></Link>
+        <Link className="admin-brand" to="/admin"><span className="admin-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span><strong>TravelMate</strong><small>ADMIN CONSOLE</small></span></Link>
         <label className="global-search"><span aria-hidden="true">⌕</span><input aria-label="Global admin search" disabled placeholder="Search resources" /><span className="search-note">Not connected</span></label>
         <div className="topbar-actions"><span className="admin-session-label">Verified session</span><Button variant="quiet" onClick={() => void logout()}>Sign out <span aria-hidden="true">↗</span></Button></div>
       </header>

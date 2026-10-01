@@ -30,7 +30,7 @@ export default function AdminLogin() {
 
   return (
     <main className="login-page">
-      <section className="login-aside"><Link className="admin-brand" to="/admin/login"><span className="admin-mark">TM</span><span><strong>TravelMate</strong><small>ADMIN CONSOLE</small></span></Link><div><p className="eyebrow">OPERATIONS · TRUST · SAFETY</p><h1>Clarity for the work that matters.</h1><p>Administrative access is verified by the TravelMate API for every session.</p></div><span className="aside-footer">INTERNAL OPERATIONS</span></section>
+      <section className="login-aside"><Link className="admin-brand" to="/admin/login"><span className="admin-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span><strong>TravelMate</strong><small>ADMIN CONSOLE</small></span></Link><div><p className="eyebrow">OPERATIONS · TRUST · SAFETY</p><h1>Clarity for the work that matters.</h1><p>Administrative access is verified by the TravelMate API for every session.</p></div><span className="aside-footer">INTERNAL OPERATIONS</span></section>
       <section className="login-main"><div className="login-form-wrap"><p className="eyebrow">SECURE SIGN IN</p><h2>Admin sign in</h2><p className="login-intro">Use your TravelMate account. Console access is checked separately by the backend.</p>
         {!isSupabaseConfigured && <p className="notice notice-warning" role="status">Set the public Supabase URL and anon key for this Admin Web environment.</p>}
         {error && <p className="notice notice-error" role="alert">{error}</p>}

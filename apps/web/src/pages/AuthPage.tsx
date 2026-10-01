@@ -28,7 +28,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   }, [mode, navigate])
 
   if (mode === 'callback') {
-    return <main className="callback-screen"><span className="brand-mark">T</span><p className="eyebrow">TRAVELMATE</p><h1>Finishing your sign-in</h1>{error ? <p role="alert" className="form-error">{error}</p> : <p aria-live="polite">{notice || 'Checking your secure sign-in link…'}</p>}</main>
+    return <main className="callback-screen"><span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><p className="eyebrow">TRAVELMATE</p><h1>Finishing your sign-in</h1>{error ? <p role="alert" className="form-error">{error}</p> : <p aria-live="polite">{notice || 'Checking your secure sign-in link…'}</p>}</main>
   }
 
   const title = mode === 'signup' ? t('auth.signupTitle') : mode === 'forgot' ? t('auth.forgotTitle') : t('auth.loginTitle')
@@ -78,13 +78,13 @@ export default function AuthPage({ mode }: { mode: Mode }) {
   return (
     <main className="auth-layout">
       <section className="auth-story" aria-label="TravelMate introduction">
-        <div className="brand-lockup"><span className="brand-mark">T</span><span>travelmate</span></div>
+        <div className="brand-lockup"><span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span>travelmate</span></div>
         <div className="story-copy"><p className="eyebrow">GO SOMEWHERE. MEET SOMEONE.</p><h1>Some journeys are better <em>shared.</em></h1><p>Find your people, discover a place, and let the good stories happen naturally.</p></div>
         <div className="story-foot"><span>MADE FOR OPEN ROADS</span><span>01 / 03</span></div>
         <div className="story-stamp" aria-hidden="true">IN<br />↗</div>
       </section>
       <section className="auth-panel">
-        <div className="auth-mobile-brand"><span className="brand-mark">T</span><span>travelmate</span></div>
+        <div className="auth-mobile-brand"><span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span>travelmate</span></div>
         <div className="auth-form-wrap">
           <p className="eyebrow">{mode === 'signup' ? 'YOUR NEXT CHAPTER' : mode === 'forgot' ? 'ACCOUNT RECOVERY' : 'GOOD TO SEE YOU'}</p>
           <h2>{title}</h2>

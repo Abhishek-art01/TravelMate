@@ -199,13 +199,13 @@ export default function OnboardingPage() {
 
   if (complete) {
     const completion = profile.data?.completion_percentage ?? 0
-    return <main className="onboarding-layout"><div className="onboarding-top"><Link className="brand-lockup" to="/home"><span className="brand-mark">T</span><span>travelmate</span></Link></div><section className="onboarding-content completion"><p className="eyebrow">SAVED TO YOUR PROFILE</p><h1>Welcome aboard, {draft.displayName || 'traveller'}.</h1><p>Your profile and preferences are saved. Profile completion is calculated by TravelMate from persisted profile data and approved media.</p><div className="completion-progress"><span style={{ width: `${completion}%` }} /></div><p>{completion}% profile completion</p><Button onClick={() => navigate('/home')}>Go to your home <span aria-hidden="true">↗</span></Button></section></main>
+    return <main className="onboarding-layout"><div className="onboarding-top"><Link className="brand-lockup" to="/home"><span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span>travelmate</span></Link></div><section className="onboarding-content completion"><p className="eyebrow">SAVED TO YOUR PROFILE</p><h1>Welcome aboard, {draft.displayName || 'traveller'}.</h1><p>Your profile and preferences are saved. Profile completion is calculated by TravelMate from persisted profile data and approved media.</p><div className="completion-progress"><span style={{ width: `${completion}%` }} /></div><p>{completion}% profile completion</p><Button onClick={() => navigate('/home')}>Go to your home <span aria-hidden="true">↗</span></Button></section></main>
   }
 
   const stepTitles = ['A quick hello', 'Your profile', 'What brings you out there?', 'Your privacy']
   return (
     <main className="onboarding-layout">
-      <header className="onboarding-top"><Link className="brand-lockup" to="/home"><span className="brand-mark">T</span><span>travelmate</span></Link><span className="step-counter">STEP {step + 1} / 4</span></header>
+      <header className="onboarding-top"><Link className="brand-lockup" to="/home"><span className="brand-mark"><img src="/logo-icon.png" alt="TravelMate" /></span><span>travelmate</span></Link><span className="step-counter">STEP {step + 1} / 4</span></header>
       <div className="onboarding-progress" aria-label={`Step ${step + 1} of 4`}><span style={{ width: `${((step + 1) / 4) * 100}%` }} /></div>
       <section className="onboarding-content">
         <p className="eyebrow">GETTING TO KNOW YOU</p><h1>{stepTitles[step]}</h1>

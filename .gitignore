@@ -29,10 +29,15 @@ coverage/
 
 # Native toolchain caches and installer downloads
 .gradle/
+**/.gradle/
+apps/android/**/build/
 .build/
 .swiftpm/
 swiftly-*.tar.gz
 /swiftly
+
+# Raw source mockup assets
+TravelMate.png
 
 # Docker optional volumes
 postgres-data/
