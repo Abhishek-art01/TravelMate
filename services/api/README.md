@@ -23,3 +23,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - Supabase auth abstraction boundary
 - security helper boundary
 - OpenAPI-ready API contract
+- `/api/v1/admin/access` for backend-authoritative admin permission discovery
+- `/api/v1/admin/system` protected by `system.manage`
+
+Admin access discovery requires at least one configured administrative permission and returns only effective permission names. Other admin datasets and actions are not connected yet; Admin Web must not simulate them.
