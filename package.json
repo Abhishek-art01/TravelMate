@@ -10,6 +10,7 @@
     "dev": "concurrently \"npm run dev --workspace apps/web\" \"npm run dev --workspace apps/admin-web\"",
     "build": "npm run build --workspace apps/web && npm run build --workspace apps/admin-web",
     "lint": "npm run lint --workspace apps/web && npm run lint --workspace apps/admin-web",
+    "typecheck": "npm run typecheck --workspace apps/web",
     "test": "echo \"No root test suite configured yet. Run workspace tests individually.\""
   },
   "devDependencies": {
