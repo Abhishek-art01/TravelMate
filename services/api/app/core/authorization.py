@@ -40,6 +40,31 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
     },
 }
 
+ADMIN_ACCESS_PERMISSIONS = frozenset({
+    "users.read",
+    "users.restrict",
+    "users.suspend",
+    "verification.read",
+    "verification.review",
+    "verification.approve",
+    "verification.reject",
+    "moderation.read",
+    "moderation.action",
+    "support.read",
+    "support.manage",
+    "payments.read",
+    "payments.manage",
+    "analytics.read",
+    "security.read",
+    "security.manage",
+    "audit.read",
+    "system.manage",
+    "travel.read",
+    "travel.manage",
+    "operations.read",
+    "operations.manage",
+})
+
 
 def get_permissions_for_role(role: str | None, explicit_permissions: set[str] | list[str] | None = None) -> set[str]:
     resolved = set(explicit_permissions or [])
@@ -58,6 +83,25 @@ def require_permission(permission: str):
                     "error": {
                         "code": "FORBIDDEN",
                         "message": f"Permission '{permission}' is required for this operation.",
+                    }
+                },
+            )
+        return current_user
+
+    return permission_dependency
+
+
+def require_any_permission(*permissions: str):
+    required_permissions = set(permissions)
+
+    async def permission_dependency(current_user: Annotated[dict, Depends(get_current_user)]) -> dict:
+        if not required_permissions.intersection(current_user.get("permissions", [])):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": {
+                        "code": "FORBIDDEN",
+                        "message": "You do not have permission to access the administration console.",
                     }
                 },
             )

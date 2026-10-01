@@ -32,6 +32,8 @@ Examples:
 
 Admin routes are intentionally isolated under `/api/v1/admin/...` and require explicit permission checks. Normal user APIs do not expose admin functionality.
 
+`GET /api/v1/admin/access` requires at least one admin permission and returns only the authorization result and effective permission names. Admin Web calls it before showing the console and refreshes the result whenever the window regains focus. The endpoint uses the existing verified-token authorization dependency; database-backed role administration and immediate revocation of already-issued JWT permissions remain future backend work.
+
 ## Least privilege
 
 The backend uses explicit permission boundaries for privileged operations and does not grant permission simply because a user is an administrator. Each protected endpoint must declare the required permission.
