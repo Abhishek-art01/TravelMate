@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -63,6 +64,17 @@ class Settings(BaseSettings):
 
     otel_exporter_otlp_endpoint: str = "http://localhost:4318"
 
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def parse_database_url(cls, value: str | None) -> str:
+        if not value:
+            return "postgresql+asyncpg://travelmate:travelmate@localhost:5432/travelmate"
+        if value.startswith("postgresql://"):
+            return value.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+asyncpg://", 1)
+        return value
+
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: str | list[str] | None) -> str:
@@ -73,7 +85,11 @@ class Settings(BaseSettings):
         return value
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(
+            str(Path(__file__).resolve().parents[2] / ".env"),
+            str(Path(__file__).resolve().parents[3] / ".env"),
+            ".env",
+        ),
         env_file_encoding="utf-8",
         extra="ignore",
     )
