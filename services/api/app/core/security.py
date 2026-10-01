@@ -122,13 +122,13 @@ class JWKSKeyCache:
 
         cached = self._cache.get(kid)
         if cached and time.monotonic() - cached[0] < self.cache_ttl_seconds:
-            return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(cached[1]))
+            return jwt.PyJWK(cached[1]).key
 
         document = _fetch_jwks_document(self.jwks_url)
         for jwk in document.get("keys", []):
             if jwk.get("kid") == kid:
                 self._cache[kid] = (time.monotonic(), jwk)
-                return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
+                return jwt.PyJWK(jwk).key
 
         _raise_auth_error("UNKNOWN_KEY_ID", "The token signing key is not available in the configured JWKS set.")
 
