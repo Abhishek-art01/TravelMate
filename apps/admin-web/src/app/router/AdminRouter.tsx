@@ -10,6 +10,8 @@ const AdminHome = lazy(() => import('../../pages/AdminHome'))
 const AdminModule = lazy(() => import('../../pages/AdminModule'))
 const AdminVerificationQueue = lazy(() => import('../../pages/AdminVerificationQueue'))
 const AdminVerificationDetail = lazy(() => import('../../pages/AdminVerificationDetail'))
+const AdminDestinations = lazy(() => import('../../pages/AdminDestinations'))
+const AdminTrips = lazy(() => import('../../pages/AdminTrips'))
 
 function GuestOnly({ children }: { children: ReactNode }) {
   const { user, loading } = useAdminAuth()
@@ -43,8 +45,8 @@ export function AdminRouter() {
       <Route path="verification/:id" element={<RequirePermission permission="verification.read"><AdminVerificationDetail /></RequirePermission>} />
       <Route path="moderation" element={<ModuleRoute title="Moderation" description="Review reports and safety queues through the backend workflow." permission="moderation.read" requiredApi="GET /api/v1/admin/moderation" />} />
       <Route path="reports" element={<ModuleRoute title="Reports" description="Report triage and outcomes are controlled by backend moderation workflows." permission="moderation.read" requiredApi="GET /api/v1/admin/reports" />} />
-      <Route path="trips" element={<ModuleRoute title="Trips" description="Trip operations will appear when TravelMate trip APIs are available." permission="travel.read" requiredApi="GET /api/v1/admin/trips" />} />
-      <Route path="destinations" element={<ModuleRoute title="Destinations" description="Destination content management requires a server-backed catalog." permission="travel.manage" requiredApi="GET /api/v1/admin/destinations" />} />
+      <Route path="trips" element={<RequirePermission permission="travel.read"><AdminTrips /></RequirePermission>} />
+      <Route path="destinations" element={<RequirePermission permission="travel.manage"><AdminDestinations /></RequirePermission>} />
       <Route path="payments" element={<ModuleRoute title="Payments" description="Only safe provider transaction metadata will be shown when available." permission="payments.read" requiredApi="GET /api/v1/admin/payments" />} />
       <Route path="support" element={<ModuleRoute title="Support" description="Support queues require a connected ticket workflow." permission="support.read" requiredApi="GET /api/v1/admin/support" />} />
       <Route path="grievances" element={<ModuleRoute title="Grievances" description="Complaint handling requires backend-owned assignment, acknowledgement, and resolution state." permission="support.manage" requiredApi="GET /api/v1/admin/grievances" />} />

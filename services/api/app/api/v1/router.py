@@ -1,6 +1,18 @@
 from fastapi import APIRouter
 
-from app.api.v1 import admin, auth, me, media, preferences, privacy, profiles, users, verification
+from app.api.v1 import (
+    admin,
+    auth,
+    destinations,
+    me,
+    media,
+    preferences,
+    privacy,
+    profiles,
+    trips,
+    users,
+    verification,
+)
 from app.routers.health import router as health_router
 
 api_router = APIRouter()
@@ -16,4 +28,11 @@ api_router.include_router(verification.router)
 api_router.include_router(verification.me_verification_router)
 api_router.include_router(verification.admin_verification_router)
 api_router.include_router(verification.webhook_verification_router)
+api_router.include_router(destinations.router)
+api_router.include_router(destinations.me_location_router)
+api_router.include_router(destinations.admin_destinations_router)
+api_router.include_router(trips.router)
+api_router.include_router(trips.me_trips_router)
+api_router.include_router(trips.admin_trips_router)
 api_router.include_router(admin.router)
+
