@@ -9,7 +9,7 @@
 
 set -eo pipefail
 
-WORKSPACE_ROOT="/workspaces/Zolexora_TMS"
+WORKSPACE_ROOT="${WORKSPACE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 DOCS_FILE="${WORKSPACE_ROOT}/docs/ECOSYSTEM_CLI_GUIDE.md"
 MCP_CANONICAL="${WORKSPACE_ROOT}/mcp.json"
 DOT_ENV="${WORKSPACE_ROOT}/.env"
@@ -129,6 +129,25 @@ WRAPPER_EOF
     log_warn "Installing OpenAI Codex CLI (@openai/codex)..."
     sudo npm install -g @openai/codex
   fi
+
+  # Ponytail Plugin & MCP Server
+  PONYTAIL_DIR="${HOME}/.gemini/config/plugins/ponytail"
+  if [ -f "${PONYTAIL_DIR}/ponytail-mcp/index.js" ]; then
+    log_success "Ponytail Plugin & MCP Server: installed"
+  else
+    log_warn "Installing Ponytail Plugin & MCP Server..."
+    if command -v agy >/dev/null 2>&1; then
+      agy plugin install https://github.com/DietrichGebert/ponytail || true
+    fi
+    if [ ! -d "$PONYTAIL_DIR" ]; then
+      mkdir -p "${HOME}/.gemini/config/plugins"
+      git clone --depth 1 https://github.com/DietrichGebert/ponytail "$PONYTAIL_DIR"
+    fi
+    if [ -f "${PONYTAIL_DIR}/ponytail-mcp/package.json" ]; then
+      npm install --silent --prefix "${PONYTAIL_DIR}/ponytail-mcp"
+    fi
+    log_success "Ponytail Plugin & MCP Server installed successfully"
+  fi
 }
 
 # ------------------------------------------------------------------------------
@@ -202,7 +221,7 @@ sync_skills() {
     log_success "Mirrored all workspace skills to ~/.gemini/config/skills/ and ~/.agents/skills/"
   fi
 
-  SKILL_COUNT=$(ls -d "${WORKSPACE_ROOT}/.agents/skills/"*/ 2>/dev/null | wc -l)
+  SKILL_COUNT=$(find "${WORKSPACE_ROOT}/.agents/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
   log_success "Active Agent Skills indexed: ${SKILL_COUNT} skill modules"
 }
 
@@ -265,7 +284,7 @@ run_check() {
   # Supabase
   if command -v supabase >/dev/null 2>&1; then
     SB_VER="v$(supabase --version 2>/dev/null | awk '{print $1}')"
-    if supabase projects list 2>&1 | grep -qi "Zolexora"; then
+    if supabase projects list 2>&1 | grep -qiE "TravelMate|Zolexora|org"; then
       SB_AUTH="${CLR_GREEN}Authenticated${CLR_RESET}"
     elif supabase projects list 2>&1 | grep -qi "org"; then
       SB_AUTH="${CLR_GREEN}Authenticated${CLR_RESET}"
