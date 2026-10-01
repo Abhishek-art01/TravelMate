@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -18,4 +18,4 @@ class UserAccount(Base):
     created_at: Mapped[str] = mapped_column(String(64), nullable=False)
     updated_at: Mapped[str] = mapped_column(String(64), nullable=False)
 
-    __table_args__ = ({"sqlite_autoincrement": True},)
+    __table_args__ = (UniqueConstraint("provider", "provider_subject", name="uq_user_accounts_provider_subject"),)

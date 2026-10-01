@@ -1,13 +1,13 @@
 export type AuthMode = 'login' | 'signup'
-export type ProfileVisibility = 'public' | 'friends' | 'private'
+export type ProfileVisibility = 'public' | 'discoverable' | 'limited' | 'hidden'
 export type TravelIntent =
-  | 'dating'
-  | 'relationship'
-  | 'casual'
-  | 'travel-companion'
-  | 'friends'
-  | 'local-guide'
-  | 'activity-partner'
+  | 'dating_romantic'
+  | 'serious_relationship'
+  | 'casual_dating'
+  | 'travel_companion'
+  | 'friends_social'
+  | 'local_guide'
+  | 'activity_partner'
 
 export type OnboardingDraft = {
   ageConfirmed: boolean
@@ -21,6 +21,6 @@ export type OnboardingDraft = {
   languages: string[]
   interests: string[]
   profileVisibility: ProfileVisibility
-  locationPrivacy: string
+  locationPrivacy: 'hidden' | 'approximate' | 'destination'
   exactLocationSharing: boolean
 }

@@ -25,5 +25,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - OpenAPI-ready API contract
 - `/api/v1/admin/access` for backend-authoritative admin permission discovery
 - `/api/v1/admin/system` protected by `system.manage`
+- persistent `/api/v1/me`, `/api/v1/me/profile`, `/api/v1/me/preferences`, and `/api/v1/me/privacy` contracts
+- provider-independent profile media upload/complete/list/order/delete routes backed by optional R2 configuration
 
 Admin access discovery requires at least one configured administrative permission and returns only effective permission names. Other admin datasets and actions are not connected yet; Admin Web must not simulate them.

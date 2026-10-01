@@ -18,7 +18,7 @@ settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # Import all model modules so Alembic can detect tables.
-from app.models import AuditLog, User, UserAccount, UserProfile, UserSession, VerificationRecord  # noqa: F401
+import app.models  # noqa: F401
 
 target_metadata = Base.metadata
 

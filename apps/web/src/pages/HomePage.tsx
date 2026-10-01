@@ -17,6 +17,8 @@ export default function HomePage() {
 
   const displayName = user?.user_metadata?.display_name ?? user?.email?.split('@')[0] ?? 'traveller'
   const verificationLabel = verification.data?.verification_status?.replaceAll('_', ' ') ?? 'Not started'
+  const completion = profile.data?.completion_percentage ?? 0
+  const profileIsComplete = profile.data?.profile_status === 'complete'
 
   return (
     <div className="member-layout">
@@ -24,7 +26,7 @@ export default function HomePage() {
       <main className="home-main">
         <section className="home-intro"><div><p className="eyebrow">YOUR JOURNEY, YOUR PACE</p><h1>Good to have you here,<br /><em>{displayName}.</em></h1><p>Every good trip starts with a little curiosity.</p></div><span className="compass-art" aria-hidden="true">N<span>✳</span></span></section>
         <section className="home-grid" aria-label="Your TravelMate account">
-          <article className="home-feature"><div className="feature-kicker"><span>01</span><span>PROFILE</span></div><h2>{profile.isLoading ? 'Checking your profile…' : profile.data ? 'Make this place yours.' : 'Start with the basics.'}</h2><p>{profile.isError ? 'Your profile details are not available yet. Continue setup and we’ll let the API validate them.' : 'Add a name and short introduction. Your birthday stays private.'}</p><Link className="text-link" to={profile.data ? '/profile' : '/onboarding'}>{profile.data ? 'View your profile' : 'Continue setup'} <span aria-hidden="true">↗</span></Link></article>
+          <article className="home-feature"><div className="feature-kicker"><span>01</span><span>PROFILE</span></div><h2>{profile.isLoading ? 'Checking your profile…' : profileIsComplete ? 'Your profile is ready.' : 'Continue your profile.'}</h2><p>{profile.isError ? 'Your profile details are not available yet. Retry to load your saved profile.' : 'Completion is calculated by TravelMate from your saved profile, preferences, interests, and approved media.'}</p>{!profile.isLoading && !profile.isError && <div className="completion-progress"><span style={{ width: `${completion}%` }} /></div>}<Link className="text-link" to={profileIsComplete ? '/profile' : '/onboarding'}>{profileIsComplete ? 'View your profile' : `Continue setup · ${completion}%`} <span aria-hidden="true">↗</span></Link></article>
           <article className="home-status"><div className="feature-kicker"><span>02</span><span>VERIFICATION</span></div><div className="status-dot" /><h2>{verification.isLoading ? 'Checking status…' : verificationLabel}</h2><p>Verification is separate from signing in. Your documents remain private.</p><span className="status-note">STATUS FROM TRAVELMATE API</span></article>
           <article className="home-privacy"><div className="feature-kicker"><span>03</span><span>PRIVACY</span></div><h2>Keep your coordinates to yourself.</h2><p>Your precise location is never public by default. Choose what to share, and when.</p><Link className="text-link" to="/privacy">Review privacy <span aria-hidden="true">↗</span></Link><span className="privacy-symbol" aria-hidden="true">⌖</span></article>
         </section>
