@@ -1,74 +1,53 @@
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel, Field, field_validator
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import get_current_user, get_current_user_optional
+from app.core.dependencies import get_active_travelmate_user, get_db_session
+from app.core.security import get_current_user_optional
+from app.models.user import User
+from app.schemas.profile import ProfileCreate, ProfileWrite
+from app.services.profiles import create_profile_write, read_own_profile, read_public_profile, save_profile
 
 router = APIRouter(tags=["profiles"])
+CurrentUser = Annotated[User, Depends(get_active_travelmate_user)]
+Database = Annotated[AsyncSession, Depends(get_db_session)]
 
 
-def _calculate_age(date_of_birth: date) -> int:
-    today = datetime.now(UTC).date()
-    return today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+@router.get("/me/profile")
+async def get_my_profile(current_user: CurrentUser, session: Database):
+    return await read_own_profile(session, current_user)
 
 
-class ProfileCreate(BaseModel):
-    display_name: str = Field(..., min_length=2, max_length=80)
-    date_of_birth: date
-    bio: str | None = Field(default=None, max_length=500)
-
-    @field_validator("date_of_birth")
-    @classmethod
-    def validate_minimum_age(cls, value: date) -> date:
-        if _calculate_age(value) < 18:
-            raise ValueError("date_of_birth must be at least 18 years old")
-        return value
-
-
-class ProfileResponse(BaseModel):
-    profile_id: str
-    display_name: str
-    age: int
-    bio: str | None = None
-    status: str = "active"
-
-
-@router.get("/me")
-async def read_current_profile(current_user: Annotated[dict, Depends(get_current_user)]):
-    return {
-        "user_id": current_user["user_id"],
-        "email": current_user.get("email"),
-        "profile_status": "complete",
-        "account_status": "active",
-    }
-
-
-@router.post("/profiles")
-async def create_profile(payload: ProfileCreate, current_user: Annotated[dict | None, Depends(get_current_user_optional)] = None):
-    profile = ProfileResponse(
-        profile_id="profile-demo-001",
-        display_name=payload.display_name,
-        age=_calculate_age(payload.date_of_birth),
-        bio=payload.bio,
-    )
-    return {
-        "profile": profile.model_dump(),
-        "user": current_user or {"user_id": "anonymous-demo-user", "role": "guest"},
-        "privacy": {
-            "location_visibility": "approximate_only",
-            "verification_media_private": True,
-        },
-    }
+@router.put("/me/profile")
+async def update_my_profile(payload: ProfileWrite, current_user: CurrentUser, session: Database):
+    return await save_profile(session, current_user, payload)
 
 
 @router.patch("/me/profile")
-async def update_current_profile(current_user: Annotated[dict, Depends(get_current_user)]):
-    return {
-        "updated": True,
-        "user_id": current_user["user_id"],
-        "status": "profile_updated",
-    }
+async def patch_my_profile(payload: ProfileWrite, current_user: CurrentUser, session: Database):
+    return await save_profile(session, current_user, payload)
+
+
+@router.post("/profiles", status_code=status.HTTP_200_OK)
+async def create_profile(
+    payload: ProfileCreate,
+    identity: Annotated[dict | None, Depends(get_current_user_optional)],
+    session: Database,
+):
+    if identity is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": {"code": "AUTHENTICATION_REQUIRED", "message": "Authentication credentials were not provided."}},
+        )
+    from app.core.identity import resolve_travelmate_user
+
+    current_user = await resolve_travelmate_user(session, identity)
+    return await save_profile(session, current_user, create_profile_write(payload), require_create_fields=True)
+
+
+@router.get("/profiles/{profile_id}/public")
+async def get_public_profile(profile_id: str, session: Database):
+    return await read_public_profile(session, profile_id)

@@ -19,7 +19,7 @@ From the repository root, run `npm run dev --workspace apps/web`. The app uses S
 
 ## API coverage and current limits
 
-The user app reads `/users/me` and `/verification/status`, and submits the backend `ProfileCreate` shape (`display_name`, `date_of_birth`, and optional `bio`) to `/profiles`. The current profile-create handler returns demo data and does not persist a durable profile. The backend also does not expose durable profile updates, preference persistence, profile completion, session listing/revocation, or privacy preference APIs. Privacy choices are stored on-device after the profile request succeeds; date of birth is excluded from browser draft storage and sent only to the profile API for its authoritative 18+ validation. Other onboarding choices are not synced and are intentionally not presented as saved.
+The user app reads `/me`, `/me/profile`, `/me/preferences`, `/me/privacy`, and `/verification/status`, and submits the backend profile/preferences/privacy contracts. Profile completion is calculated by the backend. Profile photos use the secure `/media/uploads` presign/complete flow when R2 is configured; the browser never receives R2 credentials. Date of birth is excluded from browser draft storage and sent only to the profile API for authoritative 18+ validation.
 
 English is the only translated resource currently shipped. i18next is configured with an English fallback and locale identifiers for major Indian languages, ready for reviewed translation resources.
 # React + TypeScript + Vite

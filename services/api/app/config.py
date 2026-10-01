@@ -27,6 +27,19 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017/travelmate"
     redis_url: str = "redis://localhost:6379/0"
 
+    r2_account_id: str = ""
+    r2_bucket: str = ""
+    r2_endpoint: str = ""
+    r2_region: str = "auto"
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    media_max_profile_photos: int = 6
+    media_max_profile_photo_size_bytes: int = 10_485_760
+    media_signed_url_ttl_seconds: int = 300
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+
     supabase_url: str = "https://example.supabase.co"
     supabase_anon_key: str = "placeholder"
     supabase_service_role_key: str = "placeholder"
