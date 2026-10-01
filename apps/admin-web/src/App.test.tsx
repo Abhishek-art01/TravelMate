@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
@@ -18,6 +18,10 @@ const mocks = vi.hoisted(() => ({
   approveCase: vi.fn(),
   rejectCase: vi.fn(),
   requestCaseAction: vi.fn(),
+  listDestinations: vi.fn(),
+  createDestination: vi.fn(),
+  updateDestination: vi.fn(),
+  listTrips: vi.fn(),
 }))
 
 vi.mock('./services/auth/supabase', () => ({
@@ -37,6 +41,10 @@ vi.mock('./services/api/admin', () => ({
     approveCase: mocks.approveCase,
     rejectCase: mocks.rejectCase,
     requestCaseAction: mocks.requestCaseAction,
+    listDestinations: mocks.listDestinations,
+    createDestination: mocks.createDestination,
+    updateDestination: mocks.updateDestination,
+    listTrips: mocks.listTrips,
   },
 }))
 
@@ -124,6 +132,116 @@ describe('TravelMate Admin Web security', () => {
     mocks.getSession.mockResolvedValue({ data: { session }, error: null })
     mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['users.read'] })
     visit('/admin/verification')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
+  })
+
+  it('renders destinations catalog when granted travel.manage and opens add modal', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['travel.manage'] })
+    mocks.listDestinations.mockResolvedValue({
+      items: [
+        {
+          id: 'dest-tokyo-1',
+          name: 'Tokyo',
+          slug: 'tokyo',
+          country: 'Japan',
+          country_code: 'JPN',
+          region: 'Kanto',
+          city: 'Tokyo',
+          description: 'Vibrant metropolis',
+          latitude: 35.6762,
+          longitude: 139.6503,
+          timezone: 'Asia/Tokyo',
+          category: 'city',
+          status: 'active',
+          aliases: ['Edo', 'Tokio'],
+          created_at: '2026-10-01T00:00:00Z',
+          updated_at: '2026-10-01T00:00:00Z',
+        },
+      ],
+      total: 1,
+      limit: 50,
+      offset: 0,
+    })
+    visit('/admin/destinations')
+    const user = userEvent.setup()
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /destination catalog/i })).toBeInTheDocument()
+    expect(await screen.findByText('Tokyo')).toBeInTheDocument()
+    expect(screen.getByText('Edo, Tokio')).toBeInTheDocument()
+
+    // Open add destination modal
+    await user.click(screen.getByRole('button', { name: /\+ add destination/i }))
+    expect(await screen.findByRole('heading', { name: /add new destination/i })).toBeInTheDocument()
+  })
+
+  it('blocks destinations catalog when travel.manage is missing', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['travel.read'] })
+    visit('/admin/destinations')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
+  })
+
+  it('renders trips operations table when granted travel.read and opens inspect modal', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['travel.read'] })
+    mocks.listTrips.mockResolvedValue({
+      items: [
+        {
+          id: 'trip-kyoto-1',
+          user_id: 'user-traveller-1',
+          user_email: 'traveller@example.com',
+          destination_id: 'dest-kyoto',
+          destination: {
+            id: 'dest-kyoto',
+            name: 'Kyoto',
+            slug: 'kyoto',
+            country: 'Japan',
+            country_code: 'JPN',
+            region: 'Kansai',
+            city: 'Kyoto',
+            category: 'cultural',
+            latitude: 35.0116,
+            longitude: 135.7681,
+          },
+          title: 'Autumn in Kyoto',
+          description: 'Exploring temples and maple foliage',
+          start_date: '2026-11-01',
+          end_date: '2026-11-10',
+          status: 'planned',
+          visibility: 'discoverable',
+          companion_preference: 'open_to_companion',
+          party_size: 2,
+          intents: ['sightseeing', 'culture'],
+          created_at: '2026-10-01T00:00:00Z',
+          updated_at: '2026-10-01T00:00:00Z',
+        },
+      ],
+      total: 1,
+      limit: 50,
+      offset: 0,
+    })
+    visit('/admin/trips')
+    const user = userEvent.setup()
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /trip operations/i })).toBeInTheDocument()
+    expect(await screen.findByText('Autumn in Kyoto')).toBeInTheDocument()
+    expect(screen.getByText(/Kyoto, Japan/)).toBeInTheDocument()
+
+    // Inspect trip
+    await user.click(screen.getByRole('button', { name: /inspect/i }))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+    expect(within(dialog).getByText('traveller@example.com')).toBeInTheDocument()
+    expect(within(dialog).getByText('Exploring temples and maple foliage')).toBeInTheDocument()
+  })
+
+  it('blocks trips operations when travel.read is missing', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['users.read'] })
+    visit('/admin/trips')
     render(<App />)
     expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
   })

@@ -9,6 +9,9 @@ const mocks = vi.hoisted(() => ({
   getMe: vi.fn(), getProfile: vi.fn(), getPreferences: vi.fn(), getPrivacy: vi.fn(), getVerification: vi.fn(),
   createProfile: vi.fn(), updateProfile: vi.fn(), updatePreferences: vi.fn(), updatePrivacy: vi.fn(),
   getMedia: vi.fn(), authorizeMediaUpload: vi.fn(), completeMediaUpload: vi.fn(), deleteMedia: vi.fn(), reorderMedia: vi.fn(),
+  listDestinations: vi.fn(), searchDestinations: vi.fn(), getNearbyDestinations: vi.fn(), getDestination: vi.fn(),
+  listMyTrips: vi.fn(), getMyTrip: vi.fn(), createTrip: vi.fn(), updateTrip: vi.fn(), deleteTrip: vi.fn(),
+  discoverTrips: vi.fn(), getPublicTrip: vi.fn(), getMyLocation: vi.fn(), updateMyLocation: vi.fn(), deleteMyLocation: vi.fn(),
 }))
 
 vi.mock('./services/auth/auth', () => ({
@@ -34,6 +37,17 @@ vi.mock('./services/api/profile', () => ({
     update: mocks.updateProfile, updatePreferences: mocks.updatePreferences, updatePrivacy: mocks.updatePrivacy,
     getMedia: mocks.getMedia, authorizeMediaUpload: mocks.authorizeMediaUpload,
     completeMediaUpload: mocks.completeMediaUpload, deleteMedia: mocks.deleteMedia, reorderMedia: mocks.reorderMedia,
+  },
+}))
+
+vi.mock('./services/api/travel', () => ({
+  travelApi: {
+    listDestinations: mocks.listDestinations, searchDestinations: mocks.searchDestinations,
+    getNearbyDestinations: mocks.getNearbyDestinations, getDestination: mocks.getDestination,
+    listMyTrips: mocks.listMyTrips, getMyTrip: mocks.getMyTrip, createTrip: mocks.createTrip,
+    updateTrip: mocks.updateTrip, deleteTrip: mocks.deleteTrip, discoverTrips: mocks.discoverTrips,
+    getPublicTrip: mocks.getPublicTrip, getMyLocation: mocks.getMyLocation,
+    updateMyLocation: mocks.updateMyLocation, deleteMyLocation: mocks.deleteMyLocation,
   },
 }))
 
@@ -76,6 +90,9 @@ beforeEach(() => {
   mocks.completeMediaUpload.mockResolvedValue({ media_id: 'media-1' })
   mocks.deleteMedia.mockResolvedValue(undefined)
   mocks.reorderMedia.mockResolvedValue({ media_id: 'media-1' })
+  mocks.listMyTrips.mockResolvedValue({ items: [], total: 0, limit: 20, offset: 0 })
+  mocks.discoverTrips.mockResolvedValue({ items: [], total: 0, limit: 20, offset: 0 })
+  mocks.searchDestinations.mockResolvedValue({ items: [], total: 0, limit: 10, offset: 0 })
 })
 
 afterEach(cleanup)
@@ -249,5 +266,61 @@ describe('TravelMate user app', () => {
     expect(screen.getByText(/selfie verification/i)).toBeInTheDocument()
     expect(screen.getByText(/short video verification/i)).toBeInTheDocument()
     expect(screen.getByText(/private vault · least privilege auditing/i)).toBeInTheDocument()
+  })
+
+  it('navigates to Trips page and renders user trips', async () => {
+    mocks.getSessionSnapshot.mockResolvedValue({ session: userSession, user: userSession.user })
+    mocks.listMyTrips.mockResolvedValue({
+      items: [
+        {
+          id: 'trip-101',
+          user_id: 'user-1',
+          destination_id: 'dest-goa',
+          destination: {
+            id: 'dest-goa',
+            name: 'Goa',
+            slug: 'goa',
+            country: 'India',
+            country_code: 'IND',
+            region: 'Goa',
+            city: 'Panaji',
+            category: 'beach',
+            latitude: 15.5,
+            longitude: 73.8,
+          },
+          title: 'Sunsets & Seafood in North Goa',
+          description: 'Beach hopping and photography trip.',
+          start_date: '2026-11-10',
+          end_date: '2026-11-18',
+          status: 'planned',
+          visibility: 'discoverable',
+          companion_preference: 'open_to_companion',
+          party_size: 2,
+          intents: ['travel_companion'],
+          created_at: '2026-10-01T00:00:00Z',
+          updated_at: '2026-10-01T00:00:00Z',
+        },
+      ],
+      total: 1,
+      limit: 20,
+      offset: 0,
+    })
+    visit('/trips')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /trips & itineraries/i })).toBeInTheDocument()
+    expect(await screen.findByText('Sunsets & Seafood in North Goa')).toBeInTheDocument()
+    expect(screen.getByText('Party of 2')).toBeInTheDocument()
+    expect(screen.getByText(/open to companion/i)).toBeInTheDocument()
+  })
+
+  it('navigates to Trip creation form with destination selector', async () => {
+    mocks.getSessionSnapshot.mockResolvedValue({ session: userSession, user: userSession.user })
+    visit('/trips/new')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /plan a new trip/i })).toBeInTheDocument()
+    expect(screen.getByText(/1\. destination/i)).toBeInTheDocument()
+    expect(screen.getByText(/2\. travel dates/i)).toBeInTheDocument()
+    expect(screen.getByText(/3\. travel intent/i)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/type city or place/i)).toBeInTheDocument()
   })
 })
