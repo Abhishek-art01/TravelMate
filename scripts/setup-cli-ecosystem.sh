@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Zolexora TMS — Developer Ecosystem Setup & Health Check
+# TravelMate — Developer Ecosystem Setup & Health Check
 #
 # Manages CLI installations, MCP servers, Agent Skills, and auth verification
 # across GitHub, Cloudinary, Supabase, MongoDB Atlas, Render, Cloudflare,
-# Resend, OpenAI Codex, Antigravity, and Ponytail.
+# Resend, OpenAI Codex, Antigravity, Ponytail, Bitwarden, and dotenvx.
 # ==============================================================================
 
 set -eo pipefail
@@ -147,6 +147,22 @@ WRAPPER_EOF
       npm install --silent --prefix "${PONYTAIL_DIR}/ponytail-mcp"
     fi
     log_success "Ponytail Plugin & MCP Server installed successfully"
+  fi
+
+  # Bitwarden CLI (bw)
+  if command -v bw >/dev/null 2>&1; then
+    log_success "Bitwarden CLI (bw): v$(bw --version 2>/dev/null | tail -n 1)"
+  else
+    log_warn "Installing Bitwarden CLI globally..."
+    sudo npm install -g @bitwarden/cli
+  fi
+
+  # dotenvx CLI (dotenvx)
+  if command -v dotenvx >/dev/null 2>&1; then
+    log_success "dotenvx CLI: v$(dotenvx --version 2>/dev/null | head -n 1)"
+  else
+    log_warn "Installing dotenvx CLI globally..."
+    sudo npm install -g @dotenvx/dotenvx
   fi
 }
 
@@ -337,6 +353,31 @@ run_check() {
       RESEND_AUTH="${CLR_YELLOW}Unauthenticated${CLR_RESET}"
     fi
     printf "%-18s %-16s %-28b %-25s\n" "Resend" "${RESEND_VER}" "${RESEND_AUTH}" "mcp.resend.com (http)"
+  fi
+
+  # Bitwarden
+  if command -v bw >/dev/null 2>&1; then
+    BW_VER="v$(bw --version 2>/dev/null | tail -n 1)"
+    BW_STATUS=$(bw status 2>&1 || true)
+    if echo "$BW_STATUS" | grep -qi '"status":"unlocked"'; then
+      BW_AUTH="${CLR_GREEN}Unlocked${CLR_RESET}"
+    elif echo "$BW_STATUS" | grep -qi '"status":"locked"'; then
+      BW_AUTH="${CLR_YELLOW}Locked${CLR_RESET}"
+    else
+      BW_AUTH="${CLR_YELLOW}Unauthenticated${CLR_RESET}"
+    fi
+    printf "%-18s %-16s %-28b %-25s\n" "Bitwarden" "${BW_VER}" "${BW_AUTH}" "bw-cli (local)"
+  fi
+
+  # dotenvx
+  if command -v dotenvx >/dev/null 2>&1; then
+    DOTENVX_VER="v$(dotenvx --version 2>/dev/null | head -n 1)"
+    if [ -f "${WORKSPACE_ROOT}/.env.keys" ]; then
+      DOTENVX_AUTH="${CLR_GREEN}Encrypted Keys${CLR_RESET}"
+    else
+      DOTENVX_AUTH="${CLR_GREEN}Active${CLR_RESET}"
+    fi
+    printf "%-18s %-16s %-28b %-25s\n" "dotenvx" "${DOTENVX_VER}" "${DOTENVX_AUTH}" "dotenvx (runtime)"
   fi
 
   echo "--------------------------------------------------------------------------------"
