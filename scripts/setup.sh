@@ -391,7 +391,7 @@ show_help() {
   cat << USAGE_EOF
 Usage: $0 [OPTION]
 
-Zolexora TMS Ecosystem Provisioner & Health Audit
+TravelMate Ecosystem Provisioner & Health Audit
 
 Options:
   -a, --all        Install missing CLIs, configure MCP, sync skills, and run check (Default)
@@ -403,8 +403,8 @@ Options:
   -h, --help       Show this help message
 
 Examples:
-  ./scripts/setup-cli-ecosystem.sh --check
-  ./scripts/setup-cli-ecosystem.sh --all
+  ./scripts/setup.sh --check
+  ./scripts/setup.sh --all
 USAGE_EOF
 }
 
