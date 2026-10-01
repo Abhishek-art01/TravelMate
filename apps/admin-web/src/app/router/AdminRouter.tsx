@@ -8,6 +8,8 @@ import { useAdminAuth } from '../providers/auth-context'
 const AdminLogin = lazy(() => import('../../pages/AdminLogin'))
 const AdminHome = lazy(() => import('../../pages/AdminHome'))
 const AdminModule = lazy(() => import('../../pages/AdminModule'))
+const AdminVerificationQueue = lazy(() => import('../../pages/AdminVerificationQueue'))
+const AdminVerificationDetail = lazy(() => import('../../pages/AdminVerificationDetail'))
 
 function GuestOnly({ children }: { children: ReactNode }) {
   const { user, loading } = useAdminAuth()
@@ -37,7 +39,8 @@ export function AdminRouter() {
       <Route index element={<AdminHome />} />
       <Route path="users" element={<ModuleRoute title="Users" description="User records and account actions require dedicated admin APIs." permission="users.read" requiredApi="GET /api/v1/admin/users" />} />
       <Route path="users/:userId" element={<ModuleRoute title="User detail" description="Account, profile, session, and audit sections require scoped detail APIs." permission="users.read" requiredApi="GET /api/v1/admin/users/{user_id}" />} />
-      <Route path="verification" element={<ModuleRoute title="Verification" description="Review status without exposing verification media." permission="verification.read" requiredApi="GET /api/v1/admin/verification" note="Admin verification queues are not available. Secure verification media access is not available yet." />} />
+      <Route path="verification" element={<RequirePermission permission="verification.read"><AdminVerificationQueue /></RequirePermission>} />
+      <Route path="verification/:id" element={<RequirePermission permission="verification.read"><AdminVerificationDetail /></RequirePermission>} />
       <Route path="moderation" element={<ModuleRoute title="Moderation" description="Review reports and safety queues through the backend workflow." permission="moderation.read" requiredApi="GET /api/v1/admin/moderation" />} />
       <Route path="reports" element={<ModuleRoute title="Reports" description="Report triage and outcomes are controlled by backend moderation workflows." permission="moderation.read" requiredApi="GET /api/v1/admin/reports" />} />
       <Route path="trips" element={<ModuleRoute title="Trips" description="Trip operations will appear when TravelMate trip APIs are available." permission="travel.read" requiredApi="GET /api/v1/admin/trips" />} />

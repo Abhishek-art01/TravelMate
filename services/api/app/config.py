@@ -40,6 +40,17 @@ class Settings(BaseSettings):
     cloudinary_api_key: str = ""
     cloudinary_api_secret: str = ""
 
+    verification_provider: str = "not_configured"
+    verification_provider_region: str = "auto"
+    verification_webhook_secret: str = ""
+    verification_max_attempts: int = 3
+    verification_session_ttl_seconds: int = 1800
+    verification_signed_url_ttl_seconds: int = 120
+    verification_id_retention_days: int = 30
+    verification_selfie_retention_days: int = 30
+    verification_video_retention_days: int = 7
+    verification_r2_bucket: str = ""
+
     supabase_url: str = "https://example.supabase.co"
     supabase_anon_key: str = "placeholder"
     supabase_service_role_key: str = "placeholder"

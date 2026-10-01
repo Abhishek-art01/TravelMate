@@ -11,6 +11,13 @@ const mocks = vi.hoisted(() => ({
   signOut: vi.fn(),
   checkAccess: vi.fn(),
   getSystemStatus: vi.fn(),
+  listVerificationQueue: vi.fn(),
+  getVerificationCase: vi.fn(),
+  getSignedMediaUrl: vi.fn(),
+  startCaseReview: vi.fn(),
+  approveCase: vi.fn(),
+  rejectCase: vi.fn(),
+  requestCaseAction: vi.fn(),
 }))
 
 vi.mock('./services/auth/supabase', () => ({
@@ -20,7 +27,17 @@ vi.mock('./services/auth/supabase', () => ({
 }))
 
 vi.mock('./services/api/admin', () => ({
-  adminApi: { checkAccess: mocks.checkAccess, getSystemStatus: mocks.getSystemStatus },
+  adminApi: {
+    checkAccess: mocks.checkAccess,
+    getSystemStatus: mocks.getSystemStatus,
+    listVerificationQueue: mocks.listVerificationQueue,
+    getVerificationCase: mocks.getVerificationCase,
+    getSignedMediaUrl: mocks.getSignedMediaUrl,
+    startCaseReview: mocks.startCaseReview,
+    approveCase: mocks.approveCase,
+    rejectCase: mocks.rejectCase,
+    requestCaseAction: mocks.requestCaseAction,
+  },
 }))
 
 const session = {
@@ -72,6 +89,41 @@ describe('TravelMate Admin Web security', () => {
     mocks.getSession.mockResolvedValue({ data: { session }, error: null })
     mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['audit.read'] })
     visit('/admin/users')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
+  })
+
+  it('renders the verification queue when granted verification.read', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['verification.read'] })
+    mocks.listVerificationQueue.mockResolvedValue({
+      items: [
+        {
+          id: 'case-12345678-abcd',
+          user_id: 'u-1',
+          user_display_name: 'Test Voyager',
+          verification_type: 'government_id',
+          status: 'submitted',
+          attempt_number: 1,
+          submitted_at: '2026-10-01T00:00:00Z',
+          reviewer_id: null,
+          expires_at: null,
+          media_count: 1,
+        },
+      ],
+      total: 1,
+    })
+    visit('/admin/verification')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /verification review queue/i })).toBeInTheDocument()
+    expect(await screen.findByText('Test Voyager')).toBeInTheDocument()
+    expect(mocks.listVerificationQueue).toHaveBeenCalled()
+  })
+
+  it('blocks verification queue when verification.read is missing', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['users.read'] })
+    visit('/admin/verification')
     render(<App />)
     expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
   })

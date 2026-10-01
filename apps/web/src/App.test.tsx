@@ -225,4 +225,29 @@ describe('TravelMate user app', () => {
     })
     expect(localStorage.getItem('travelmate-privacy-preferences')).toBeNull()
   })
+
+  it('navigates to Verification Center and renders verification channels with privacy notice', async () => {
+    mocks.getSessionSnapshot.mockResolvedValue({ session: userSession, user: userSession.user })
+    mocks.getVerification.mockResolvedValue({
+      user_id: 'user-1',
+      overall_status: 'not_started',
+      is_verified: false,
+      checks: {
+        email: { type: 'email', status: 'verified', details: 'Verified via email' },
+        social: { type: 'social', status: 'not_started', details: 'No social login linked' },
+        selfie: { type: 'selfie', status: 'not_started', attempts_remaining: 3 },
+        government_id: { type: 'government_id', status: 'not_started', attempts_remaining: 3 },
+        video: { type: 'video', status: 'not_started', attempts_remaining: 3 },
+      },
+      verification_status: 'not_started',
+      required_checks: ['email_verification', 'government_id_verification'],
+    })
+    visit('/settings/verification')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /identity verification center/i })).toBeInTheDocument()
+    expect(screen.getByText(/government-issued id/i)).toBeInTheDocument()
+    expect(screen.getByText(/selfie verification/i)).toBeInTheDocument()
+    expect(screen.getByText(/short video verification/i)).toBeInTheDocument()
+    expect(screen.getByText(/private vault · least privilege auditing/i)).toBeInTheDocument()
+  })
 })

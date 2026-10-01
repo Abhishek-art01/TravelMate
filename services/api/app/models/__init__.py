@@ -7,7 +7,12 @@ from app.models.privacy import UserPrivacySettings
 from app.models.profile import UserProfile
 from app.models.session import UserSession
 from app.models.user import User
-from app.models.verification import VerificationRecord
+from app.models.verification import (
+    VerificationAttempt,
+    VerificationEvent,
+    VerificationMedia,
+    VerificationRecord,
+)
 
 __all__ = [
     "AuditLog",
@@ -22,5 +27,8 @@ __all__ = [
     "UserPrivacySettings",
     "UserProfile",
     "UserSession",
+    "VerificationAttempt",
+    "VerificationEvent",
+    "VerificationMedia",
     "VerificationRecord",
 ]

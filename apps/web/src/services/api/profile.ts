@@ -70,7 +70,43 @@ export type ProfileMedia = {
 
 export type MediaPage = { items: ProfileMedia[]; next_cursor: string | null }
 export type UploadAuthorization = { media_id: string; upload_url: string; expires_at: string; required_headers: Record<string, string> }
-export type VerificationSnapshot = { user_id: string; verification_status: string; required_checks: string[] }
+export type CheckStatus = {
+  type: string
+  status: string
+  updated_at?: string | null
+  attempts_remaining?: number | null
+  details?: string | null
+}
+
+export type UserVerificationOverview = {
+  user_id: string
+  overall_status: string
+  is_verified: boolean
+  checks: Record<string, CheckStatus>
+  verification_status: string
+  required_checks: string[]
+}
+
+export type VerificationSession = {
+  verification_id: string
+  verification_type: string
+  status: string
+  attempt_number: number
+  session_url?: string | null
+  expires_at?: string | null
+}
+
+export type VerificationCaseStatus = {
+  verification_id: string
+  verification_type: string
+  status: string
+  attempt_number: number
+  submitted_at?: string | null
+  reviewed_at?: string | null
+  updated_at: string
+}
+
+export type VerificationSnapshot = UserVerificationOverview
 
 export const profileApi = {
   getMe: () => apiRequest<AccountSnapshot>('/me'),
@@ -83,7 +119,18 @@ export const profileApi = {
   getPreferences: () => apiRequest<Preferences>('/me/preferences'),
   updatePreferences: (payload: Preferences) => apiRequest<Preferences>('/me/preferences', { method: 'PUT', body: JSON.stringify(payload) }),
   getPrivacy: () => apiRequest<Privacy>('/me/privacy'),
-  getVerification: () => apiRequest<VerificationSnapshot>('/verification/status'),
+  getVerification: () => apiRequest<UserVerificationOverview>('/me/verification/status'),
+  startVerification: (type: string, redirectUrl?: string) => apiRequest<VerificationSession>(`/me/verification/${encodeURIComponent(type)}/start`, {
+    method: 'POST',
+    body: JSON.stringify({ redirect_url: redirectUrl }),
+  }),
+  getVerificationCase: (id: string) => apiRequest<VerificationCaseStatus>(`/me/verification/${encodeURIComponent(id)}`),
+  submitVerification: (id: string) => apiRequest<VerificationCaseStatus>(`/me/verification/${encodeURIComponent(id)}/submit`, {
+    method: 'POST',
+  }),
+  cancelVerification: (id: string) => apiRequest<VerificationCaseStatus>(`/me/verification/${encodeURIComponent(id)}/cancel`, {
+    method: 'POST',
+  }),
   updatePrivacy: (payload: Partial<Privacy>) => apiRequest<Privacy>('/me/privacy', { method: 'PUT', body: JSON.stringify(payload) }),
   getMedia: (after?: string, signal?: AbortSignal) => apiRequest<MediaPage>(`/media?limit=24${after ? `&after=${encodeURIComponent(after)}` : ''}`, { signal }),
   authorizeMediaUpload: (payload: { mime_type: string; size_bytes: number; visibility: ProfileMedia['visibility'] }) => apiRequest<UploadAuthorization>('/media/uploads', { method: 'POST', body: JSON.stringify(payload) }),

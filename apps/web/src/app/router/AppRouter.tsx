@@ -7,6 +7,7 @@ const OnboardingPage = lazy(() => import('../../pages/OnboardingPage'))
 const HomePage = lazy(() => import('../../pages/HomePage'))
 const ProfilePage = lazy(() => import('../../pages/ProfilePage'))
 const PrivacyPage = lazy(() => import('../../pages/PrivacyPage'))
+const VerificationPage = lazy(() => import('../../pages/VerificationPage'))
 
 function RouteLoading() {
   return <main className="route-loading" aria-live="polite"><span className="spinner" />Loading TravelMate</main>
@@ -43,6 +44,8 @@ export function AppRouter() {
           <Route path="/home" element={<Protected><HomePage /></Protected>} />
           <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
           <Route path="/privacy" element={<Protected><PrivacyPage /></Protected>} />
+          <Route path="/settings/verification" element={<Protected><VerificationPage /></Protected>} />
+          <Route path="/verification" element={<Navigate to="/settings/verification" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
