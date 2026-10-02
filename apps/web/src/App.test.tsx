@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   listDestinations: vi.fn(), searchDestinations: vi.fn(), getNearbyDestinations: vi.fn(), getDestination: vi.fn(),
   listMyTrips: vi.fn(), getMyTrip: vi.fn(), createTrip: vi.fn(), updateTrip: vi.fn(), deleteTrip: vi.fn(),
   discoverTrips: vi.fn(), getPublicTrip: vi.fn(), getMyLocation: vi.fn(), updateMyLocation: vi.fn(), deleteMyLocation: vi.fn(),
+  getCandidates: vi.fn(), getCandidateDetail: vi.fn(), recordInteraction: vi.fn(), blockUser: vi.fn(), unblockUser: vi.fn(), reportUser: vi.fn(),
 }))
 
 vi.mock('./services/auth/auth', () => ({
@@ -48,6 +49,17 @@ vi.mock('./services/api/travel', () => ({
     updateTrip: mocks.updateTrip, deleteTrip: mocks.deleteTrip, discoverTrips: mocks.discoverTrips,
     getPublicTrip: mocks.getPublicTrip, getMyLocation: mocks.getMyLocation,
     updateMyLocation: mocks.updateMyLocation, deleteMyLocation: mocks.deleteMyLocation,
+  },
+}))
+
+vi.mock('./services/api/discovery', () => ({
+  discoveryApi: {
+    getCandidates: mocks.getCandidates,
+    getCandidateDetail: mocks.getCandidateDetail,
+    recordInteraction: mocks.recordInteraction,
+    blockUser: mocks.blockUser,
+    unblockUser: mocks.unblockUser,
+    reportUser: mocks.reportUser,
   },
 }))
 
@@ -336,5 +348,88 @@ describe('TravelMate user app', () => {
     expect(screen.getByText(/2\. travel dates/i)).toBeInTheDocument()
     expect(screen.getByText(/3\. travel intent/i)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/type city or place/i)).toBeInTheDocument()
+  })
+
+  it('navigates to Discover page, renders candidates with match score and reasons, and handles connect interaction', async () => {
+    mocks.getSessionSnapshot.mockResolvedValue({ session: userSession, user: userSession.user })
+    const candidateData = {
+      id: 'candidate-99',
+      display_name: 'Aarav',
+      age: 26,
+      bio: 'Loves backpacking in the Himalayas and sampling street food.',
+      gender_identity: 'man',
+      is_verified: true,
+      photo_url: null,
+      approx_city: 'Manali',
+      approx_country: 'IN',
+      approx_latitude: 32.24,
+      approx_longitude: 77.18,
+      approx_distance_km: 42.5,
+      trips: [
+        {
+          id: 'trip-99',
+          destination_id: 'dest-manali',
+          destination_name: 'Manali, Himachal Pradesh',
+          country: 'India',
+          country_code: 'IN',
+          start_date: '2026-11-01',
+          end_date: '2026-11-10',
+          companion_preference: 'open_to_companion',
+          party_size: 1,
+          intents: ['travel_companion', 'friends_social'],
+        },
+      ],
+      travel_intentions: ['travel_companion'],
+      interests: ['hiking', 'photography'],
+      languages: ['en', 'hi'],
+      match_score: 92,
+      match_reasons: ['Traveling to Manali, Himachal Pradesh', 'Travel dates overlap by 8 days'],
+    }
+    mocks.getCandidates.mockResolvedValue({
+      items: [candidateData],
+      next_cursor: null,
+      total: 1,
+    })
+    mocks.recordInteraction.mockResolvedValue({
+      id: 'interaction-1',
+      user_id: 'user-1',
+      target_user_id: 'candidate-99',
+      interaction_type: 'like',
+      is_match: true,
+      created_at: '2026-10-02T12:00:00Z',
+    })
+
+    visit('/discover')
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /connect with fellow travelers/i })).toBeInTheDocument()
+    expect(await screen.findByText('Aarav, 26')).toBeInTheDocument()
+    expect(screen.getByText('92%')).toBeInTheDocument()
+    expect(screen.getByText(/✓ verified/i)).toBeInTheDocument()
+    expect(screen.getByText(/travel dates overlap by 8 days/i)).toBeInTheDocument()
+    expect(screen.getByText('Manali, Himachal Pradesh')).toBeInTheDocument()
+
+    // Click Connect (like)
+    const connectButton = screen.getByRole('button', { name: /connect/i })
+    await userEvent.click(connectButton)
+
+    // Mutual match celebration banner is shown!
+    expect(await screen.findByRole('heading', { name: /it’s a match!/i })).toBeInTheDocument()
+    expect(screen.getByText(/both interested in connecting for travel/i)).toBeInTheDocument()
+  })
+
+  it('renders truthful empty state on Discover page when no candidates match', async () => {
+    mocks.getSessionSnapshot.mockResolvedValue({ session: userSession, user: userSession.user })
+    mocks.getCandidates.mockResolvedValue({
+      items: [],
+      next_cursor: null,
+      total: 0,
+    })
+
+    visit('/discover')
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /no discoverable travelers found/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reset filters/i })).toBeInTheDocument()
   })
 })

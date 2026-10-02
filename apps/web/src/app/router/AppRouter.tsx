@@ -12,6 +12,7 @@ const TripsPage = lazy(() => import('../../pages/TripsPage'))
 const TripNewPage = lazy(() => import('../../pages/TripNewPage'))
 const TripDetailPage = lazy(() => import('../../pages/TripDetailPage'))
 const TripEditPage = lazy(() => import('../../pages/TripEditPage'))
+const DiscoverPage = lazy(() => import('../../pages/DiscoverPage'))
 
 function RouteLoading() {
   return <main className="route-loading" aria-live="polite"><span className="spinner" />Loading TravelMate</main>
@@ -54,6 +55,7 @@ export function AppRouter() {
           <Route path="/trips/new" element={<Protected><TripNewPage /></Protected>} />
           <Route path="/trips/:id" element={<Protected><TripDetailPage /></Protected>} />
           <Route path="/trips/:id/edit" element={<Protected><TripEditPage /></Protected>} />
+          <Route path="/discover" element={<Protected><DiscoverPage /></Protected>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

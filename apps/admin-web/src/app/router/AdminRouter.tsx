@@ -12,6 +12,7 @@ const AdminVerificationQueue = lazy(() => import('../../pages/AdminVerificationQ
 const AdminVerificationDetail = lazy(() => import('../../pages/AdminVerificationDetail'))
 const AdminDestinations = lazy(() => import('../../pages/AdminDestinations'))
 const AdminTrips = lazy(() => import('../../pages/AdminTrips'))
+const AdminReports = lazy(() => import('../../pages/AdminReports'))
 
 function GuestOnly({ children }: { children: ReactNode }) {
   const { user, loading } = useAdminAuth()
@@ -44,7 +45,7 @@ export function AdminRouter() {
       <Route path="verification" element={<RequirePermission permission="verification.read"><AdminVerificationQueue /></RequirePermission>} />
       <Route path="verification/:id" element={<RequirePermission permission="verification.read"><AdminVerificationDetail /></RequirePermission>} />
       <Route path="moderation" element={<ModuleRoute title="Moderation" description="Review reports and safety queues through the backend workflow." permission="moderation.read" requiredApi="GET /api/v1/admin/moderation" />} />
-      <Route path="reports" element={<ModuleRoute title="Reports" description="Report triage and outcomes are controlled by backend moderation workflows." permission="moderation.read" requiredApi="GET /api/v1/admin/reports" />} />
+      <Route path="reports" element={<RequirePermission permission="moderation.read"><AdminReports /></RequirePermission>} />
       <Route path="trips" element={<RequirePermission permission="travel.read"><AdminTrips /></RequirePermission>} />
       <Route path="destinations" element={<RequirePermission permission="travel.manage"><AdminDestinations /></RequirePermission>} />
       <Route path="payments" element={<ModuleRoute title="Payments" description="Only safe provider transaction metadata will be shown when available." permission="payments.read" requiredApi="GET /api/v1/admin/payments" />} />

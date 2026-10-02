@@ -22,6 +22,8 @@ const mocks = vi.hoisted(() => ({
   createDestination: vi.fn(),
   updateDestination: vi.fn(),
   listTrips: vi.fn(),
+  listReports: vi.fn(),
+  updateReport: vi.fn(),
 }))
 
 vi.mock('./services/auth/supabase', () => ({
@@ -45,6 +47,8 @@ vi.mock('./services/api/admin', () => ({
     createDestination: mocks.createDestination,
     updateDestination: mocks.updateDestination,
     listTrips: mocks.listTrips,
+    listReports: mocks.listReports,
+    updateReport: mocks.updateReport,
   },
 }))
 
@@ -255,6 +259,69 @@ describe('TravelMate Admin Web security', () => {
     mocks.getSession.mockResolvedValue({ data: { session }, error: null })
     mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['users.read'] })
     visit('/admin/trips')
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
+  })
+
+  it('renders reports moderation table when granted moderation.read and allows actioning', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({
+      authorized: true,
+      permissions: ['moderation.read', 'moderation.action'],
+    })
+    mocks.listReports.mockResolvedValue({
+      items: [
+        {
+          id: 'report-101',
+          reporter_id: 'user-reporter-uuid-1',
+          reported_id: 'user-bad-uuid-2',
+          reason: 'inappropriate_content',
+          details: 'User has abusive content in bio',
+          status: 'pending',
+          reviewed_by_id: null,
+          resolution_notes: null,
+          created_at: '2026-10-02T10:00:00Z',
+          updated_at: '2026-10-02T10:00:00Z',
+        },
+      ],
+      total: 1,
+    })
+    mocks.updateReport.mockResolvedValue({
+      id: 'report-101',
+      reporter_id: 'user-reporter-uuid-1',
+      reported_id: 'user-bad-uuid-2',
+      reason: 'inappropriate_content',
+      details: 'User has abusive content in bio',
+      status: 'actioned',
+      reviewed_by_id: 'mod-1',
+      resolution_notes: 'Profile updated and warned',
+      created_at: '2026-10-02T10:00:00Z',
+      updated_at: '2026-10-02T10:05:00Z',
+    })
+
+    visit('/admin/reports')
+    const user = userEvent.setup()
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /user reports queue/i })).toBeInTheDocument()
+    expect(await screen.findByText('inappropriate content')).toBeInTheDocument()
+    expect(screen.getByText('User has abusive content in bio')).toBeInTheDocument()
+
+    // Action report
+    await user.click(screen.getByRole('button', { name: /^action$/i }))
+    const modal = await screen.findByRole('dialog')
+    expect(modal).toBeInTheDocument()
+    expect(within(modal).getByRole('heading', { name: /action safety report/i })).toBeInTheDocument()
+
+    // Confirm action
+    await user.click(within(modal).getByRole('button', { name: /confirm action/i }))
+    expect(mocks.updateReport).toHaveBeenCalledWith('report-101', 'actioned', '')
+  })
+
+  it('blocks reports moderation when moderation.read is missing', async () => {
+    mocks.getSession.mockResolvedValue({ data: { session }, error: null })
+    mocks.checkAccess.mockResolvedValue({ authorized: true, permissions: ['travel.read'] })
+    visit('/admin/reports')
     render(<App />)
     expect(await screen.findByRole('heading', { name: /access not permitted/i })).toBeInTheDocument()
   })

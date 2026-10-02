@@ -238,5 +238,40 @@ export const adminApi = {
     const qs = params.toString() ? `?${params.toString()}` : ''
     return adminApiRequest<AdminTripListResponse>(`/admin/trips${qs}`, { signal })
   },
+  listReports: (status?: string, limit?: number, offset?: number, signal?: AbortSignal) => {
+    const params = new URLSearchParams()
+    if (status && status !== 'all') params.append('status', status)
+    if (limit) params.append('limit', String(limit))
+    if (offset) params.append('offset', String(offset))
+    const qs = params.toString() ? `?${params.toString()}` : ''
+    return adminApiRequest<AdminReportListResponse>(`/admin/reports${qs}`, { signal })
+  },
+  updateReport: (
+    reportId: string,
+    status: 'pending' | 'under_review' | 'actioned' | 'dismissed',
+    resolutionNotes?: string,
+  ) =>
+    adminApiRequest<AdminReport>(`/admin/reports/${encodeURIComponent(reportId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, resolution_notes: resolutionNotes || null }),
+    }),
+}
+
+export type AdminReport = {
+  id: string
+  reporter_id: string
+  reported_id: string
+  reason: string
+  details?: string | null
+  status: 'pending' | 'under_review' | 'actioned' | 'dismissed'
+  reviewed_by_id?: string | null
+  resolution_notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type AdminReportListResponse = {
+  items: AdminReport[]
+  total: number
 }
 

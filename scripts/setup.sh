@@ -4,7 +4,7 @@
 #
 # Manages CLI installations, MCP servers, Agent Skills, and auth verification
 # across GitHub, Cloudinary, Supabase, MongoDB Atlas, Render, Cloudflare,
-# Resend, OpenAI Codex, Antigravity, Ponytail, Bitwarden, and dotenvx.
+# Resend, OpenAI Codex, Antigravity, Ponytail, Bitwarden, dotenvx, and Firebase.
 # ==============================================================================
 
 set -eo pipefail
@@ -164,6 +164,22 @@ WRAPPER_EOF
     log_warn "Installing dotenvx CLI globally..."
     sudo npm install -g @dotenvx/dotenvx
   fi
+
+  # Firebase CLI (firebase-tools)
+  if command -v firebase >/dev/null 2>&1; then
+    log_success "Firebase CLI (firebase): v$(firebase --version 2>/dev/null || echo 'installed')"
+  else
+    log_warn "Installing Firebase CLI globally..."
+    sudo npm install -g firebase-tools
+  fi
+
+  # Agent Skills CLI (skills)
+  if command -v skills >/dev/null 2>&1; then
+    log_success "Skills CLI (skills): v$(skills --version 2>/dev/null || echo 'installed')"
+  else
+    log_warn "Installing Agent Skills CLI globally..."
+    sudo npm install -g skills
+  fi
 }
 
 # ------------------------------------------------------------------------------
@@ -172,9 +188,66 @@ WRAPPER_EOF
 configure_mcp() {
   log_header "Configuring Model Context Protocol (MCP) & Symlinks"
 
-  mkdir -p "${WORKSPACE_ROOT}/.agents" "${WORKSPACE_ROOT}/.vscode" "${HOME}/.codex" "${WORKSPACE_ROOT}/.codex"
+  mkdir -p "${WORKSPACE_ROOT}/.agents" "${WORKSPACE_ROOT}/.vscode" "${HOME}/.codex" "${WORKSPACE_ROOT}/.codex" "${HOME}/.gemini/config"
 
-  # Ensure canonical mcp.json symlinks
+  # Generate canonical mcp.json
+  cat << 'MCP_CANONICAL_EOF' > "${MCP_CANONICAL}"
+{
+  "mcpServers": {
+    "firebase": {
+      "command": "npx",
+      "args": ["-y", "firebase-mcp-server"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "cloudinary": {
+      "command": "npx",
+      "args": ["-y", "@cloudinary/asset-management", "mcp", "start"]
+    },
+    "mongodb": {
+      "command": "npx",
+      "args": ["-y", "mongodb-mcp-server"]
+    },
+    "render": {
+      "command": "render-mcp-server"
+    },
+    "supabase": {
+      "serverUrl": "https://mcp.supabase.com/mcp"
+    },
+    "resend": {
+      "serverUrl": "https://mcp.resend.com/mcp"
+    },
+    "cloudflare": {
+      "serverUrl": "https://mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-docs": {
+      "serverUrl": "https://docs.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-bindings": {
+      "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-builds": {
+      "serverUrl": "https://builds.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-observability": {
+      "serverUrl": "https://observability.mcp.cloudflare.com/mcp"
+    },
+    "ponytail": {
+      "command": "node",
+      "args": ["/home/codespace/.gemini/config/plugins/ponytail/ponytail-mcp/index.js"]
+    }
+  }
+}
+MCP_CANONICAL_EOF
+  log_success "Canonical mcp.json generated at ${MCP_CANONICAL}"
+
+  # Mirror canonical MCP config to global Antigravity config
+  cp "${MCP_CANONICAL}" "${HOME}/.gemini/config/mcp_config.json"
+  log_success "Synchronized global Antigravity MCP config (~/.gemini/config/mcp_config.json)"
+
+  # Ensure canonical mcp.json symlinks for workspace
   ln -sf "../mcp.json" "${WORKSPACE_ROOT}/.agents/mcp_config.json"
   ln -sf "../mcp.json" "${WORKSPACE_ROOT}/.vscode/mcp.json"
   log_success "Symlinked .agents/mcp_config.json & .vscode/mcp.json -> mcp.json"
@@ -216,6 +289,14 @@ args = ["-y", "@cloudinary/asset-management", "mcp", "start"]
 [mcp_servers.github]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-github"]
+
+[mcp_servers.firebase]
+command = "npx"
+args = ["-y", "firebase-mcp-server"]
+
+[mcp_servers.ponytail]
+command = "node"
+args = ["/home/codespace/.gemini/config/plugins/ponytail/ponytail-mcp/index.js"]
 CODEX_CONFIG_EOF
 
   cp "${HOME}/.codex/config.toml" "${WORKSPACE_ROOT}/.codex/config.toml"
@@ -229,6 +310,13 @@ sync_skills() {
   log_header "Synchronizing Agent Skills"
 
   mkdir -p "${WORKSPACE_ROOT}/.agents/skills" "${HOME}/.gemini/config/skills" "${HOME}/.agents/skills"
+
+  # Auto-install base ecosystem skills if workspace has none
+  SKILL_COUNT=$(find "${WORKSPACE_ROOT}/.agents/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+  if [ "$SKILL_COUNT" -eq 0 ] && command -v skills >/dev/null 2>&1; then
+    log_warn "Installing base Firebase agent skills into workspace..."
+    skills add firebase/agent-skills -y 2>/dev/null || true
+  fi
 
   # Mirror workspace skills across global agent paths
   if [ -d "${WORKSPACE_ROOT}/.agents/skills" ]; then
@@ -269,7 +357,8 @@ run_check() {
     else
       CODEX_AUTH="${CLR_YELLOW}Unauthenticated${CLR_RESET}"
     fi
-    printf "%-18s %-16s %-28b %-25s\n" "OpenAI Codex" "v${CODEX_VER}" "${CODEX_AUTH}" "11 Servers (config.toml)"
+    CODEX_SERVERS=$(grep -c "^\[mcp_servers\." "${HOME}/.codex/config.toml" 2>/dev/null || echo "13")
+    printf "%-18s %-16s %-28b %-25s\n" "OpenAI Codex" "v${CODEX_VER}" "${CODEX_AUTH}" "${CODEX_SERVERS} Servers (config.toml)"
   else
     printf "%-18s %-16s %-28b %-25s\n" "OpenAI Codex" "Not Found" "${CLR_RED}Uninstalled${CLR_RESET}" "-"
   fi
@@ -378,6 +467,26 @@ run_check() {
       DOTENVX_AUTH="${CLR_GREEN}Active${CLR_RESET}"
     fi
     printf "%-18s %-16s %-28b %-25s\n" "dotenvx" "${DOTENVX_VER}" "${DOTENVX_AUTH}" "dotenvx (runtime)"
+  fi
+
+  # Firebase
+  if command -v firebase >/dev/null 2>&1; then
+    FB_VER="v$(firebase --version 2>/dev/null | awk '{print $1}')"
+    if firebase login:list 2>&1 | grep -qiE "@|Logged in"; then
+      FB_AUTH="${CLR_GREEN}Authenticated${CLR_RESET}"
+    else
+      FB_AUTH="${CLR_YELLOW}Unauthenticated${CLR_RESET}"
+    fi
+    printf "%-18s %-16s %-28b %-25s\n" "Firebase" "${FB_VER}" "${FB_AUTH}" "firebase-mcp-server (stdio)"
+  else
+    printf "%-18s %-16s %-28b %-25s\n" "Firebase" "Not Found" "${CLR_RED}Uninstalled${CLR_RESET}" "-"
+  fi
+
+  # Agent Skills Ecosystem
+  if command -v skills >/dev/null 2>&1; then
+    SKILLS_VER="v$(skills --version 2>/dev/null | head -n 1)"
+    SKILL_COUNT=$(find "${WORKSPACE_ROOT}/.agents/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+    printf "%-18s %-16s %-28b %-25s\n" "Agent Skills" "${SKILLS_VER}" "${CLR_GREEN}${SKILL_COUNT} Skills Active${CLR_RESET}" "skills.sh / agentskills"
   fi
 
   echo "--------------------------------------------------------------------------------"
