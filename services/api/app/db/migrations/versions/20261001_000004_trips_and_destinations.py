@@ -10,6 +10,8 @@ from __future__ import annotations
 import sqlalchemy as sa
 from alembic import op
 
+from app.models.spatial import GeographyPointType
+
 revision = "20261001_000004"
 down_revision = "20261001_000003"
 branch_labels = None
@@ -23,7 +25,7 @@ def upgrade() -> None:
     if is_postgres:
         op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
 
-    geom_type = sa.text("geography(Point, 4326)") if is_postgres else sa.String(length=64)
+    geom_type = GeographyPointType()
 
     # 1. Create destinations
     op.create_table(
