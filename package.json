@@ -2,16 +2,17 @@
   "name": "travelmate-monorepo",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "pnpm@12.3.4",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace apps/web\" \"npm run dev --workspace apps/admin-web\"",
-    "build": "npm run build --workspace apps/web && npm run build --workspace apps/admin-web",
-    "lint": "npm run lint --workspace apps/web && npm run lint --workspace apps/admin-web",
-    "typecheck": "npm run typecheck --workspace apps/web && npm run typecheck --workspace apps/admin-web",
-    "test": "npm run test --workspace apps/web && npm run test --workspace apps/admin-web"
+    "dev": "concurrently \"pnpm --filter web dev\" \"pnpm --filter admin-web dev\"",
+    "build": "pnpm --filter web build && pnpm --filter admin-web build",
+    "lint": "pnpm --filter web lint && pnpm --filter admin-web lint",
+    "typecheck": "pnpm --filter web typecheck && pnpm --filter admin-web typecheck",
+    "test": "pnpm --filter web test && pnpm --filter admin-web test"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
