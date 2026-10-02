@@ -12,7 +12,8 @@
     "build": "pnpm --filter web build && pnpm --filter admin-web build",
     "lint": "pnpm --filter web lint && pnpm --filter admin-web lint",
     "typecheck": "pnpm --filter web typecheck && pnpm --filter admin-web typecheck",
-    "test": "pnpm --filter web test && pnpm --filter admin-web test"
+    "test": "pnpm --filter web test && pnpm --filter admin-web test",
+    "prepare": "cp scripts/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
