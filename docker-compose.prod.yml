@@ -9,9 +9,7 @@ services:
       - redis-data:/data
 
   api:
-    build:
-      context: ./services/api
-      dockerfile: Dockerfile
+    image: abhishekart01/travelmate-api:latest
     container_name: travelmate-api
     restart: always
     working_dir: /app
