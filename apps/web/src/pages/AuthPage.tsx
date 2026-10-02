@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { configuredOAuthProviders, isSupabaseConfigured } from '../app/config/env'
-import { Button, Input } from '../components/ui'
+import { Button, Input, PasswordInput } from '../components/ui'
 import { sendPasswordReset, signInWithOAuth, signInWithPassword, signUpWithEmail, supabase } from '../services/auth/auth'
 
 type Mode = 'login' | 'signup' | 'forgot' | 'callback'
@@ -103,7 +103,7 @@ export default function AuthPage({ mode }: { mode: Mode }) {
             <Input id="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
             {!isForgot && <>
               <div className="password-label"><label htmlFor="password">{t('auth.password')}</label>{mode === 'login' && <Link to="/forgot-password">Forgot?</Link>}</div>
-              <Input id="password" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={mode === 'signup' ? 8 : 1} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'} />
+              <PasswordInput id="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={mode === 'signup' ? 8 : 1} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'} />
             </>}
             {mode === 'signup' && <p className="age-note">TravelMate is for adults 18 and over. We’ll confirm your age during profile setup.</p>}
             <Button className="submit-button" disabled={busy || !isSupabaseConfigured} type="submit">{busy ? 'Please wait…' : isForgot ? 'Send recovery link' : mode === 'signup' ? t('auth.signupAction') : t('auth.loginAction')}<span aria-hidden="true">↗</span></Button>

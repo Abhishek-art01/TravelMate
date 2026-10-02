@@ -134,6 +134,20 @@ describe('TravelMate user app', () => {
     expect(mocks.signUpWithEmail).toHaveBeenCalledWith('new@example.com', 'long-enough-password')
   })
 
+  it('toggles password visibility between masked and plain text', async () => {
+    visit('/login')
+    const user = userEvent.setup()
+    render(<App />)
+    const passwordInput = await screen.findByLabelText('Password')
+    expect(passwordInput).toHaveAttribute('type', 'password')
+    const toggleButton = screen.getByRole('button', { name: /show password/i })
+    await user.click(toggleButton)
+    expect(passwordInput).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: /hide password/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /hide password/i }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
+  })
+
   it('signs out and returns the user to login', async () => {
     mocks.getSessionSnapshot.mockResolvedValue({ session: userSession, user: userSession.user })
     const user = userEvent.setup()
