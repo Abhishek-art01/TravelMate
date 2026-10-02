@@ -53,3 +53,4 @@ redis-data/
 # dotenvx - private key and local credentials (NEVER commit)
 .env.keys
 .env.local
+!.env.deployment
