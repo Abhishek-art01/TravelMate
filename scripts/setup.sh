@@ -402,8 +402,12 @@ run_check() {
   # MongoDB Atlas
   if command -v atlas >/dev/null 2>&1; then
     ATLAS_VER="v$(atlas --version 2>/dev/null | head -n 1 | awk '{print $3}')"
+    PY_BIN="${WORKSPACE_ROOT}/.venv/bin/python3"
+    [ ! -f "$PY_BIN" ] && PY_BIN="python3"
     if atlas auth whoami 2>&1 | grep -qi "Logged in"; then
       ATLAS_AUTH="${CLR_GREEN}Authenticated${CLR_RESET}"
+    elif "$PY_BIN" -c "import pymongo, os, certifi; from dotenv import load_dotenv; load_dotenv('${DOT_ENV}'); uri = os.getenv('MONGODB_URI'); assert uri; pymongo.MongoClient(uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=3000).admin.command('ping')" >/dev/null 2>&1; then
+      ATLAS_AUTH="${CLR_GREEN}Connected (Live DB)${CLR_RESET}"
     else
       ATLAS_AUTH="${CLR_YELLOW}Unauthenticated${CLR_RESET}"
     fi
@@ -472,7 +476,7 @@ run_check() {
   # Firebase
   if command -v firebase >/dev/null 2>&1; then
     FB_VER="v$(firebase --version 2>/dev/null | awk '{print $1}')"
-    if firebase login:list 2>&1 | grep -qiE "@|Logged in"; then
+    if [ -f "${WORKSPACE_ROOT}/.firebase/service-account.json" ] || firebase login:list 2>&1 | grep -qiE "@|Logged in"; then
       FB_AUTH="${CLR_GREEN}Authenticated${CLR_RESET}"
     else
       FB_AUTH="${CLR_YELLOW}Unauthenticated${CLR_RESET}"
