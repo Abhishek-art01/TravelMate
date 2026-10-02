@@ -1,8 +1,41 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'TravelMate',
+        short_name: 'TravelMate',
+        description: 'Some journeys are better shared.',
+        theme_color: '#f4f6f1',
+        background_color: '#f4f6f1',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/logo-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/logo-512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: '/logo-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      }
+    })
+  ],
   envDir: '../../',
   server: {
     host: '0.0.0.0',
