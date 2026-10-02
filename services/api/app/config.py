@@ -85,11 +85,7 @@ class Settings(BaseSettings):
         return value
 
     model_config = SettingsConfigDict(
-        env_file=(
-            str(Path(__file__).resolve().parents[2] / ".env"),
-            str(Path(__file__).resolve().parents[3] / ".env"),
-            ".env",
-        ),
+        env_file=tuple(str(parent / ".env") for parent in Path(__file__).resolve().parents) + (".env",),
         env_file_encoding="utf-8",
         extra="ignore",
     )
