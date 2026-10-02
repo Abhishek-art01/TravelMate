@@ -1,0 +1,28 @@
+#!/bin/sh
+# Auto-encrypt .env before every commit — pulls DOTENV_PRIVATE_KEY from Bitwarden
+if git diff --cached --name-only | grep -q "^\.env$"; then
+  echo "🔐 Fetching DOTENV_PRIVATE_KEY from Bitwarden..."
+
+  # Load personal Bitwarden credentials from .env.local if it exists
+  if [ -f .env.local ]; then
+    export $(grep -v '^#' .env.local | xargs)
+  fi
+
+  # Unlock vault using API key (requires BW_CLIENTID and BW_CLIENTSECRET in env)
+  BW_SESSION=$(bw unlock --passwordenv BW_MASTER_PASSWORD --raw 2>/dev/null)
+
+  if [ -z "$BW_SESSION" ]; then
+    echo "⚠ Could not unlock Bitwarden vault. Falling back to .env.keys..."
+  else
+    PRIVATE_KEY=$(bw get notes "ZOLEXORA TMS DOTENV_PRIVATE_KEY" --session "$BW_SESSION" 2>/dev/null)
+    if [ -n "$PRIVATE_KEY" ]; then
+      export DOTENV_PRIVATE_KEY="$PRIVATE_KEY"
+      echo "✅ DOTENV_PRIVATE_KEY loaded from Bitwarden"
+    else
+      echo "⚠ Key not found in vault. Falling back to .env.keys..."
+    fi
+  fi
+
+  echo "" | pnpm dotenvx encrypt
+  git add -f .env
+fi

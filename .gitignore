@@ -13,7 +13,6 @@ coverage.xml
 htmlcov/
 
 # Environment
-.env
 .env.*
 !.env.example
 
@@ -48,11 +47,9 @@ postgres-data/
 mongo-data/
 redis-data/
 
-# dotenvx private key - NEVER commit this
-.env.keys
-
-# dotenvx private key - NEVER commit this
-.env.keys
-
 # Local credential files - NEVER commit
+.env.local
+
+# dotenvx - private key and local credentials (NEVER commit)
+.env.keys
 .env.local
