@@ -63,6 +63,7 @@ class Settings(BaseSettings):
     jwt_cache_ttl_seconds: int = 300
 
     otel_exporter_otlp_endpoint: str = "http://localhost:4318"
+    sentry_dsn: str | None = None
 
     @field_validator("database_url", mode="before")
     @classmethod
