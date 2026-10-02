@@ -9,6 +9,16 @@ from app.routers.health import router as health_router
 settings = get_settings()
 allowed_origins = [origin.strip() for origin in settings.cors_allowed_origins.split(",") if origin.strip()]
 
+# Initialize Sentry if DSN is configured
+if settings.sentry_dsn:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.app_environment,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.api_version,
