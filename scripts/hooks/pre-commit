@@ -1,28 +1,61 @@
 #!/bin/sh
-# Auto-encrypt .env before every commit — pulls DOTENV_PRIVATE_KEY from Bitwarden
-if git diff --cached --name-only | grep -q "^\.env$"; then
-  echo "🔐 Fetching DOTENV_PRIVATE_KEY from Bitwarden..."
+# Pre-commit hook: auto-encrypt .env if it is staged and contains plain-text values.
+# Pulls DOTENV_PRIVATE_KEY from Bitwarden automatically using .env.local credentials.
 
-  # Load personal Bitwarden credentials from .env.local if it exists
-  if [ -f .env.local ]; then
-    export $(grep -v '^#' .env.local | xargs)
-  fi
-
-  # Unlock vault using API key (requires BW_CLIENTID and BW_CLIENTSECRET in env)
-  BW_SESSION=$(bw unlock --passwordenv BW_MASTER_PASSWORD --raw 2>/dev/null)
-
-  if [ -z "$BW_SESSION" ]; then
-    echo "⚠ Could not unlock Bitwarden vault. Falling back to .env.keys..."
-  else
-    PRIVATE_KEY=$(bw get notes "ZOLEXORA TMS DOTENV_PRIVATE_KEY" --session "$BW_SESSION" 2>/dev/null)
-    if [ -n "$PRIVATE_KEY" ]; then
-      export DOTENV_PRIVATE_KEY="$PRIVATE_KEY"
-      echo "✅ DOTENV_PRIVATE_KEY loaded from Bitwarden"
-    else
-      echo "⚠ Key not found in vault. Falling back to .env.keys..."
-    fi
-  fi
-
-  echo "" | pnpm dotenvx encrypt
-  git add -f .env
+# Only run if .env is staged
+if ! git diff --cached --name-only | grep -q "^\.env$"; then
+  exit 0
 fi
+
+echo "🔐 .env is staged — checking encryption status..."
+
+# If .env already has the dotenvx public key header it is already encrypted
+if grep -q "DOTENV_PUBLIC_KEY" .env; then
+  echo "✅ .env is already encrypted. Proceeding with commit."
+  exit 0
+fi
+
+echo "⚠  .env contains plain-text values! Auto-encrypting before commit..."
+
+# Load Bitwarden credentials from .env.local if available
+if [ -f .env.local ]; then
+  # shellcheck disable=SC2046
+  export $(grep -v '^#' .env.local | xargs)
+fi
+
+# Try to get the private key from Bitwarden
+if [ -n "$BW_MASTER_PASSWORD" ]; then
+  BW_SESSION=$(bw unlock --passwordenv BW_MASTER_PASSWORD --raw 2>/dev/null)
+fi
+
+if [ -n "$BW_SESSION" ]; then
+  PRIVATE_KEY=$(bw get notes "TRAVELMATE DOTENV_PRIVATE_KEY" --session "$BW_SESSION" 2>/dev/null)
+  if [ -n "$PRIVATE_KEY" ]; then
+    export DOTENV_PRIVATE_KEY="$PRIVATE_KEY"
+    echo "✅ DOTENV_PRIVATE_KEY loaded from Bitwarden"
+  else
+    echo "⚠  Key not found in Bitwarden vault. Falling back to .env.keys..."
+  fi
+else
+  echo "⚠  Could not unlock Bitwarden. Falling back to .env.keys..."
+fi
+
+# If still no key, try .env.keys on disk
+if [ -z "$DOTENV_PRIVATE_KEY" ] && [ -f .env.keys ]; then
+  DOTENV_PRIVATE_KEY=$(grep "^DOTENV_PRIVATE_KEY=" .env.keys | cut -d '=' -f2)
+  export DOTENV_PRIVATE_KEY
+fi
+
+# If we still have no key, BLOCK the commit
+if [ -z "$DOTENV_PRIVATE_KEY" ]; then
+  echo ""
+  echo "❌ COMMIT BLOCKED: .env is unencrypted and no DOTENV_PRIVATE_KEY was found."
+  echo "   Run: dotenvx encrypt -f .env"
+  echo "   Or ensure .env.local or .env.keys contains the private key."
+  exit 1
+fi
+
+# Encrypt and re-stage the .env
+dotenvx encrypt -f .env --quiet
+git add -f .env
+echo "✅ .env encrypted and re-staged. Commit proceeding safely."
