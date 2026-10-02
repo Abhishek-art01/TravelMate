@@ -49,7 +49,7 @@ jobs:
           # Tags will be generated for both GHCR and Docker Hub (if secrets exist)
           images: |
             ${{ env.GHCR_REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/travelmate-api
+            abhishekart01/travelmate-api
           tags: |
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
             type=sha,format=short
