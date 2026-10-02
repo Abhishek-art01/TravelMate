@@ -1,0 +1,60 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: travelmate-redis
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: travelmate-api
+    restart: always
+    working_dir: /app
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - redis
+    env_file:
+      - .env.prod
+    environment:
+      APP_ENVIRONMENT: production
+      REDIS_URL: redis://redis:6379/0
+      FASTAPI_HOST: 0.0.0.0
+      FASTAPI_PORT: 8000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.node
+    container_name: travelmate-web
+    restart: always
+    working_dir: /workspace
+    # In production, you would typically serve the static files via Nginx 
+    # instead of running the Vite dev server, but this runs the production build.
+    command: sh -c "pnpm --filter web build && pnpm --filter web preview --host 0.0.0.0 --port 5173"
+    ports:
+      - "127.0.0.1:5173:5173"
+    env_file:
+      - .env.prod
+
+  admin-web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.node
+    container_name: travelmate-admin-web
+    restart: always
+    working_dir: /workspace
+    command: sh -c "pnpm --filter admin-web build && pnpm --filter admin-web preview --host 0.0.0.0 --port 4173"
+    ports:
+      - "127.0.0.1:4173:4173"
+    env_file:
+      - .env.prod
+
+volumes:
+  redis-data:
