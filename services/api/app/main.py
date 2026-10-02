@@ -17,6 +17,7 @@ if settings.sentry_dsn:
         environment=settings.app_environment,
         traces_sample_rate=1.0,
         profiles_sample_rate=1.0,
+        send_default_pii=True,
     )
 
 app = FastAPI(
