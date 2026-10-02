@@ -1,0 +1,22 @@
+backend:
+  - changed-files:
+    - any-glob-to-any-file: 'services/api/**/*'
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: 'apps/web/**/*'
+
+admin:
+  - changed-files:
+    - any-glob-to-any-file: 'apps/admin-web/**/*'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: 'docs/**/*'
+    - any-glob-to-any-file: '*.md'
+
+infrastructure:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**/*'
+    - any-glob-to-any-file: 'infrastructure/**/*'
+    - any-glob-to-any-file: 'docker-compose*'
