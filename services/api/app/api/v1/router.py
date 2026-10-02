@@ -3,12 +3,15 @@ from fastapi import APIRouter
 from app.api.v1 import (
     admin,
     auth,
+    blocks,
     destinations,
+    discovery,
     me,
     media,
     preferences,
     privacy,
     profiles,
+    reports,
     trips,
     users,
     verification,
@@ -34,5 +37,9 @@ api_router.include_router(destinations.admin_destinations_router)
 api_router.include_router(trips.router)
 api_router.include_router(trips.me_trips_router)
 api_router.include_router(trips.admin_trips_router)
+api_router.include_router(discovery.router)
+api_router.include_router(blocks.router)
+api_router.include_router(reports.router)
+api_router.include_router(reports.admin_reports_router)
 api_router.include_router(admin.router)
 

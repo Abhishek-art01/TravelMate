@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "firebase": {
+      "command": "npx",
+      "args": ["-y", "firebase-mcp-server"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "cloudinary": {
+      "command": "npx",
+      "args": ["-y", "@cloudinary/asset-management", "mcp", "start"]
+    },
+    "mongodb": {
+      "command": "npx",
+      "args": ["-y", "mongodb-mcp-server"]
+    },
+    "render": {
+      "command": "render-mcp-server"
+    },
+    "supabase": {
+      "serverUrl": "https://mcp.supabase.com/mcp"
+    },
+    "resend": {
+      "serverUrl": "https://mcp.resend.com/mcp"
+    },
+    "cloudflare": {
+      "serverUrl": "https://mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-docs": {
+      "serverUrl": "https://docs.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-bindings": {
+      "serverUrl": "https://bindings.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-builds": {
+      "serverUrl": "https://builds.mcp.cloudflare.com/mcp"
+    },
+    "cloudflare-observability": {
+      "serverUrl": "https://observability.mcp.cloudflare.com/mcp"
+    },
+    "ponytail": {
+      "command": "node",
+      "args": ["/home/codespace/.gemini/config/plugins/ponytail/ponytail-mcp/index.js"]
+    }
+  }
+}
