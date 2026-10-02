@@ -173,6 +173,14 @@ WRAPPER_EOF
     sudo npm install -g firebase-tools
   fi
 
+  # Vercel CLI (vercel)
+  if command -v vercel >/dev/null 2>&1; then
+    log_success "Vercel CLI (vercel): v$(vercel --version 2>/dev/null || echo 'installed')"
+  else
+    log_warn "Installing Vercel CLI globally..."
+    sudo npm install -g vercel
+  fi
+
   # Agent Skills CLI (skills)
   if command -v skills >/dev/null 2>&1; then
     log_success "Skills CLI (skills): v$(skills --version 2>/dev/null || echo 'installed')"
