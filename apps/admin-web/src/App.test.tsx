@@ -75,6 +75,19 @@ describe('TravelMate Admin Web security', () => {
     expect(await screen.findByRole('heading', { name: /admin sign in/i })).toBeInTheDocument()
   })
 
+  it('toggles password visibility between masked and plain text on admin login', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    const passwordInput = await screen.findByLabelText('Password')
+    expect(passwordInput).toHaveAttribute('type', 'password')
+    const toggleButton = screen.getByRole('button', { name: /show password/i })
+    await user.click(toggleButton)
+    expect(passwordInput).toHaveAttribute('type', 'text')
+    expect(screen.getByRole('button', { name: /hide password/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /hide password/i }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
+  })
+
   it('denies an authenticated regular user using the backend 403', async () => {
     mocks.getSession.mockResolvedValue({ data: { session }, error: null })
     mocks.checkAccess.mockRejectedValue(new AdminApiError('Forbidden', 403, 'FORBIDDEN'))

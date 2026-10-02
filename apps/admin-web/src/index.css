@@ -126,6 +126,11 @@ code { color: #435c51; font: .72rem var(--mono); }
 .login-form-wrap form { display: grid; gap: 9px; }
 .login-form-wrap form label { margin-top: 5px; color: #41554b; font-size: .76rem; font-weight: 700; }
 .login-form-wrap form input { min-height: 43px; padding: 9px 11px; border: 1px solid #cdd8d0; border-radius: 3px; color: var(--ink); background: white; }
+.password-input-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+.password-input-wrap input { width: 100%; padding-right: 42px !important; }
+.password-toggle-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; padding: 6px; border: 0; background: transparent; color: var(--muted); border-radius: 3px; cursor: pointer; transition: color .15s ease, background-color .15s ease; }
+.password-toggle-btn:hover { color: var(--ink); background: rgba(0, 0, 0, 0.05); }
+.password-toggle-btn:focus-visible { outline: 2px solid #da7752; outline-offset: 1px; }
 .login-submit { width: 100%; min-height: 43px; margin-top: 9px; }
 .access-note { margin: 18px 0 0; padding: 11px 12px; border-left: 3px solid #d2a04c; color: #6f5b34; background: var(--amber-bg); font-size: .71rem; line-height: 1.5; }
 .notice { margin: 14px 0; padding: 11px 12px; border-radius: 3px; font-size: .76rem; }
