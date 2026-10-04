@@ -67,3 +67,9 @@ export async function getSessionSnapshot(): Promise<AuthResult> {
     user: data.session?.user ?? null,
   }
 }
+
+
+export async function verifyEmailOtp(email: string, token: string) {
+  requireSupabaseConfiguration()
+  return supabase.auth.verifyOtp({ email, token, type: 'signup' })
+}
