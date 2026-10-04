@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { configuredOAuthProviders, isSupabaseConfigured } from '../app/config/env'
 import { Button, Input, PasswordInput } from '../components/ui'
-import { signInWithOAuth, signUpWithEmail, verifyEmailOtp } from '../services/auth/auth'
+import { signInWithOAuth, signUpWithEmail, verifyEmailOtp, resendSignupOtp } from '../services/auth/auth'
 
 export default function SignupPage() {
   const { t } = useTranslation()
@@ -13,7 +13,15 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [otpSentToEmail, setOtpSentToEmail] = useState('')
   const [otpCode, setOtpCode] = useState('')
+  const [countdown, setCountdown] = useState(0)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [countdown])
 
   async function onSignupSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -27,6 +35,7 @@ export default function SignupPage() {
       } else {
         // Email verification is required, switch to OTP mode
         setOtpSentToEmail(email)
+        setCountdown(60)
       }
     } catch {
       setError('We couldn’t create your account. Check your details and try again.')
@@ -49,6 +58,21 @@ export default function SignupPage() {
       }
     } catch (err: any) {
       setError(err.message || 'Invalid code. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onResendOtp() {
+    if (countdown > 0) return
+    setBusy(true)
+    setError('')
+    try {
+      const { error: resendError } = await resendSignupOtp(otpSentToEmail)
+      if (resendError) throw resendError
+      setCountdown(60)
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend code. Please try again.')
     } finally {
       setBusy(false)
     }
@@ -144,16 +168,32 @@ export default function SignupPage() {
                   <span aria-hidden="true">↗</span>
                 </Button>
               </form>
-              
-              <p className="switch-auth" style={{ marginTop: '24px' }}>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
                 <button 
                   type="button" 
-                  onClick={() => setOtpSentToEmail('')} 
-                  style={{ background: 'none', border: 'none', color: 'var(--green)', cursor: 'pointer', fontWeight: 700 }}
+                  onClick={onResendOtp}
+                  disabled={countdown > 0 || busy}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: countdown > 0 ? 'var(--muted)' : 'var(--coral)', 
+                    cursor: countdown > 0 ? 'not-allowed' : 'pointer', 
+                    fontWeight: 700,
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend Code'}
+                </button>
+
+                <button 
+                  type="button" 
+                  onClick={() => { setOtpSentToEmail(''); setCountdown(0); }} 
+                  style={{ background: 'none', border: 'none', color: 'var(--green)', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}
                 >
                   Use a different email
                 </button>
-              </p>
+              </div>
             </>
           )}
         </div>
