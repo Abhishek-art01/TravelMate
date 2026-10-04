@@ -198,11 +198,17 @@ async def demo_user_count(async_session):
 # ---------------------------------------------------------------------------
 
 
+def _get_project_root():
+    import os
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+
 def test_no_mock_users_file_exists():
     """Ensure no mockUsers.ts or similar static candidate file exists."""
     import subprocess
+    import os
+    apps_dir = os.path.join(_get_project_root(), "apps")
     result = subprocess.run(
-        ["find", "/workspaces/TravelMate/apps", "-name", "mockUsers*", "-o", "-name", "mock_users*"],
+        ["find", apps_dir, "-name", "mockUsers*", "-o", "-name", "mock_users*"],
         capture_output=True, text=True
     )
     found = result.stdout.strip()
@@ -212,9 +218,11 @@ def test_no_mock_users_file_exists():
 def test_no_hardcoded_discovery_candidates_in_frontend():
     """Ensure discovery page doesn't import static candidate data."""
     import subprocess
+    import os
+    web_src_dir = os.path.join(_get_project_root(), "apps/web/src/")
     result = subprocess.run(
         ["grep", "-r", "-E", "presentationMode|mockUsers|staticCandidates|hardcodedUsers",
-         "/workspaces/TravelMate/apps/web/src/"],
+         web_src_dir],
         capture_output=True, text=True
     )
     found = result.stdout.strip()
@@ -224,14 +232,15 @@ def test_no_hardcoded_discovery_candidates_in_frontend():
 def test_discovery_api_client_exists():
     """Ensure the discovery API client file exists (frontend uses real API)."""
     import os
-    api_client = "/workspaces/TravelMate/apps/web/src/services/api/discovery.ts"
+    api_client = os.path.join(_get_project_root(), "apps/web/src/services/api/discovery.ts")
     assert os.path.exists(api_client), f"Discovery API client not found at {api_client}"
 
 
 def test_discovery_page_uses_api_client():
     """Ensure DiscoverPage.tsx imports from the real discovery API client."""
     import re
-    page = "/workspaces/TravelMate/apps/web/src/pages/DiscoverPage.tsx"
+    import os
+    page = os.path.join(_get_project_root(), "apps/web/src/pages/DiscoverPage.tsx")
     with open(page) as f:
         content = f.read()
     assert re.search(r"from.*services/api/discovery", content), (

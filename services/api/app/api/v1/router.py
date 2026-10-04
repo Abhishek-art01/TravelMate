@@ -8,6 +8,7 @@ from app.api.v1 import (
     discovery,
     me,
     media,
+    onboarding,
     preferences,
     privacy,
     profiles,
@@ -17,6 +18,7 @@ from app.api.v1 import (
     verification,
 )
 from app.routers.health import router as health_router
+
 
 api_router = APIRouter()
 api_router.include_router(health_router, tags=["health"])
@@ -42,4 +44,5 @@ api_router.include_router(blocks.router)
 api_router.include_router(reports.router)
 api_router.include_router(reports.admin_reports_router)
 api_router.include_router(admin.router)
+api_router.include_router(onboarding.router)
 

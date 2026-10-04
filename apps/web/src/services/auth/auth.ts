@@ -34,7 +34,7 @@ export async function signUpWithEmail(email: string, password: string, metadata:
   })
 }
 
-export async function signInWithOAuth(provider: 'google' | 'apple') {
+export async function signInWithOAuth(provider: 'google' | 'apple' | 'instagram') {
   requireSupabaseConfiguration()
   return supabase.auth.signInWithOAuth({
     provider,

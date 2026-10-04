@@ -20,6 +20,14 @@ from app.models.verification import (
     VerificationMedia,
     VerificationRecord,
 )
+from app.models.onboarding import (
+    ProviderIdentity,
+    ProfileIdentity,
+    DatingPreferences,
+    DiscoveryPreferences,
+    TravelPreferences,
+    LifestylePreferences,
+)
 
 __all__ = [
     "AuditLog",
@@ -47,4 +55,10 @@ __all__ = [
     "VerificationEvent",
     "VerificationMedia",
     "VerificationRecord",
+    "ProviderIdentity",
+    "ProfileIdentity",
+    "DatingPreferences",
+    "DiscoveryPreferences",
+    "TravelPreferences",
+    "LifestylePreferences",
 ]

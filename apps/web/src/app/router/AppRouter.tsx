@@ -3,6 +3,8 @@ import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react
 import { useAuth } from '../providers/auth-context'
 
 const AuthPage = lazy(() => import('../../pages/AuthPage'))
+const LoginPage = lazy(() => import('../../pages/LoginPage'))
+const SignupPage = lazy(() => import('../../pages/SignupPage'))
 const OnboardingPage = lazy(() => import('../../pages/OnboardingPage'))
 const HomePage = lazy(() => import('../../pages/HomePage'))
 const ProfilePage = lazy(() => import('../../pages/ProfilePage'))
@@ -35,14 +37,16 @@ function NotFound() {
   return <main className="not-found"><p className="eyebrow">404 · OFF THE MAP</p><h1>This page isn’t here.</h1><Link to="/home">Return to your travels</Link></main>
 }
 
+const LandingPage = lazy(() => import('../../pages/LandingPage'))
+
 export function AppRouter() {
   return (
     <BrowserRouter>
       <Suspense fallback={<RouteLoading />}>
         <Routes>
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/login" element={<GuestOnly><AuthPage mode="login" /></GuestOnly>} />
-          <Route path="/signup" element={<GuestOnly><AuthPage mode="signup" /></GuestOnly>} />
+          <Route path="/" element={<GuestOnly><LandingPage /></GuestOnly>} />
+          <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
+          <Route path="/signup" element={<GuestOnly><SignupPage /></GuestOnly>} />
           <Route path="/forgot-password" element={<GuestOnly><AuthPage mode="forgot" /></GuestOnly>} />
           <Route path="/auth/callback" element={<AuthPage mode="callback" />} />
           <Route path="/onboarding/*" element={<Protected><OnboardingPage /></Protected>} />

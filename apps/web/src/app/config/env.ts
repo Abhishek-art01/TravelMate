@@ -19,4 +19,4 @@ export const isSupabaseConfigured =
 export const configuredOAuthProviders = ((import.meta.env.VITE_AUTH_PROVIDERS as string | undefined) ?? '')
   .split(',')
   .map((provider) => provider.trim().toLowerCase())
-  .filter((provider): provider is 'google' | 'apple' => provider === 'google' || provider === 'apple')
+  .filter((provider): provider is 'google' | 'apple' | 'instagram' => provider === 'google' || provider === 'apple' || provider === 'instagram')

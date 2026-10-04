@@ -63,14 +63,14 @@ export default function AuthPage({ mode }: { mode: Mode }) {
     }
   }
 
-  async function oauth(provider: 'google' | 'apple') {
+  async function oauth(provider: 'google' | 'apple' | 'instagram') {
     setBusy(true)
     setError('')
     try {
       const { error: oauthError } = await signInWithOAuth(provider)
       if (oauthError) throw oauthError
     } catch {
-      setError(`We couldn’t continue with ${provider === 'google' ? 'Google' : 'Apple'}. Please try again.`)
+      setError(`We couldn’t continue with ${provider === 'google' ? 'Google' : provider === 'instagram' ? 'Instagram' : 'Apple'}. Please try again.`)
       setBusy(false)
     }
   }
@@ -93,8 +93,15 @@ export default function AuthPage({ mode }: { mode: Mode }) {
           {notice && <p className="form-success" role="status">{notice}</p>}
           {error && <p className="form-error" role="alert">{error}</p>}
           {!isForgot && mode !== 'signup' && configuredOAuthProviders.length > 0 && (
-            <div className="oauth-row">
-              {configuredOAuthProviders.map((provider) => <Button key={provider} variant="secondary" disabled={busy || !isSupabaseConfigured} onClick={() => void oauth(provider)}><span className={`provider-icon ${provider === 'apple' ? 'provider-apple' : ''}`}>{provider === 'google' ? 'G' : '●'}</span> {provider === 'google' ? 'Google' : 'Apple'}</Button>)}
+            <div className="oauth-row" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {configuredOAuthProviders.map((provider) => (
+                <Button key={provider} variant="secondary" disabled={busy || !isSupabaseConfigured} onClick={() => void oauth(provider)}>
+                  <span className={`provider-icon ${provider === 'apple' ? 'provider-apple' : ''}`}>
+                    {provider === 'google' ? 'G' : provider === 'instagram' ? '📷' : '●'}
+                  </span> 
+                  Continue with {provider === 'google' ? 'Google' : provider === 'instagram' ? 'Instagram' : 'Apple'}
+                </Button>
+              ))}
             </div>
           )}
           {!isForgot && mode !== 'signup' && configuredOAuthProviders.length > 0 && <div className="divider"><span>or continue with email</span></div>}
